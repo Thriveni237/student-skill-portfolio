@@ -9,12 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { showError, showSuccess } from '@/utils/toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { setDemoMode } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,17 +34,14 @@ const Login = () => {
       showSuccess(`Welcome back to SkillPort!`);
       navigate(`/dashboard/${userRole}`);
     } catch (error: any) {
-      if (error.message === 'Failed to fetch') {
-        showError("Connection error: Please make sure you have clicked 'Add Supabase' to connect your database.");
-      } else {
-        showError(error.message || "Invalid login credentials");
-      }
+      showError(error.message || "Invalid login credentials");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDemoLogin = (role: 'student' | 'recruiter' | 'admin') => {
+    setDemoMode(role);
     showSuccess(`Entering as Demo ${role}...`);
     navigate(`/dashboard/${role}`);
   };
@@ -54,7 +53,7 @@ const Login = () => {
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-blue-600 p-2 rounded-xl">
-                <GraduationCap className="text-white w-8 h-8" />
+                < GraduationCap className="text-white w-8 h-8" />
               </div>
             </div>
             <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
@@ -76,7 +75,7 @@ const Login = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Button variant="link" className="px-0 font-normal text-xs text-blue-600">Forgot password?</Button>
+                  <Button variant="link" type="button" className="px-0 font-normal text-xs text-blue-600">Forgot password?</Button>
                 </div>
                 <Input 
                   id="password" 
@@ -107,19 +106,19 @@ const Login = () => {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-slate-50 px-2 text-slate-500">Or explore the UI</span>
+            <span className="bg-slate-50 px-2 text-slate-500 font-bold text-blue-600">Presentation Mode</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('student')} className="text-[10px] h-auto py-2 flex-col gap-1">
-            <Play className="w-3 h-3" /> Student Demo
+          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('student')} className="text-[10px] h-auto py-3 flex-col gap-2 border-blue-200 hover:bg-blue-50 hover:border-blue-300">
+            <Play className="w-4 h-4 text-blue-600" /> Student
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('recruiter')} className="text-[10px] h-auto py-2 flex-col gap-1">
-            <Play className="w-3 h-3" /> Recruiter Demo
+          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('recruiter')} className="text-[10px] h-auto py-3 flex-col gap-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300">
+            <Play className="w-4 h-4 text-indigo-600" /> Recruiter
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('admin')} className="text-[10px] h-auto py-2 flex-col gap-1">
-            <Play className="w-3 h-3" /> Admin Demo
+          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('admin')} className="text-[10px] h-auto py-3 flex-col gap-2 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
+            <Play className="w-4 h-4 text-emerald-600" /> Admin
           </Button>
         </div>
       </div>
