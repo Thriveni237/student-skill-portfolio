@@ -1,12 +1,24 @@
 "use client";
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Briefcase, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/context/AuthContext';
 
 const Landing = () => {
+  const { session, role, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && session && role) {
+      navigate(`/dashboard/${role}`);
+    }
+  }, [session, role, loading, navigate]);
+
+  if (loading) return null;
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
