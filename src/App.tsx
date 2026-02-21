@@ -13,6 +13,8 @@ import Projects from "./pages/student/Projects";
 import Certifications from "./pages/student/Certifications";
 import Profile from "./pages/student/Profile";
 import PortfolioPreview from "./pages/PortfolioPreview";
+import RecruiterDashboard from "./pages/recruiter/Dashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,12 @@ const App = () => (
           <Route path="/dashboard/student/skills" element={<Skills />} />
           <Route path="/dashboard/student/projects" element={<Projects />} />
           <Route path="/dashboard/student/certs" element={<Certifications />} />
+          
+          {/* Recruiter Routes */}
+          <Route path="/dashboard/recruiter" element={<RecruiterDashboard />} />
+          
+          {/* Admin Routes */}
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
           
           {/* Public/Preview Routes */}
           <Route path="/portfolio/preview" element={<PortfolioPreview />} />
