@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Code2, FolderRoot, Award, TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const StudentDashboard = () => {
   const stats = [
