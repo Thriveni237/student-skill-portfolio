@@ -1,19 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-// These variables are automatically provided by the Supabase integration in your environment
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Hardcoded credentials to ensure immediate connectivity
+const SUPABASE_URL = "https://pubrozwmsjuavwrkuikr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1YnJvendtc2p1YXZ3cmt1aWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NzQ5NTksImV4cCI6MjA4NzI1MDk1OX0.zSQYaS7kTChrFu3gL5f9ZD-1c7cHX31igpkeUY8kSac";
 
-console.log("Supabase URL present:", !!supabaseUrl);
-console.log("Supabase Key present:", !!supabaseAnonKey);
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("CRITICAL: Supabase credentials missing. Authentication will fail.");
-}
-
-// We use a fallback only to prevent the app from crashing on load, 
-// but real requests will fail if these are placeholders.
-export const supabase = createClient(
-  supabaseUrl || 'https://missing-url.supabase.co',
-  supabaseAnonKey || 'missing-key'
-);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
