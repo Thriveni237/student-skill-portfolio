@@ -22,8 +22,16 @@ const Signup = () => {
     setTimeout(() => {
       setIsLoading(false);
       showSuccess("Account created successfully!");
-      navigate('/dashboard');
-    }, 1500);
+      
+      // Redirect based on selected role
+      if (role === 'recruiter') {
+        navigate('/dashboard/recruiter');
+      } else if (role === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
+        navigate('/dashboard/student');
+      }
+    }, 1000);
   };
 
   return (

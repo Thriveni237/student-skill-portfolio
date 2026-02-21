@@ -2,27 +2,37 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Loader2 } from 'lucide-react';
+import { GraduationCap, Loader2, User, Briefcase, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { showSuccess, showError } from '@/utils/toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { showSuccess } from '@/utils/toast';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState<string>("student");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Mock login logic - will be replaced with Supabase Auth
+    // Mock login logic
     setTimeout(() => {
       setIsLoading(false);
-      showSuccess("Welcome back to SkillPort!");
-      navigate('/dashboard');
-    }, 1500);
+      showSuccess(`Welcome back to SkillPort!`);
+      
+      // Redirect based on selected role
+      if (role === 'recruiter') {
+        navigate('/dashboard/recruiter');
+      } else if (role === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
+        navigate('/dashboard/student');
+      }
+    }, 1000);
   };
 
   return (
@@ -49,6 +59,31 @@ const Login = () => {
                 <Button variant="link" className="px-0 font-normal text-xs text-blue-600">Forgot password?</Button>
               </div>
               <Input id="password" type="password" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Login as</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" /> Student
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="recruiter">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" /> Recruiter
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4" /> College Admin
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
