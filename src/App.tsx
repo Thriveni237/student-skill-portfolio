@@ -23,9 +23,12 @@ import SavedProfiles from "./pages/recruiter/SavedProfiles";
 import RecruiterJobs from "./pages/recruiter/Jobs";
 import Applicants from "./pages/recruiter/Applicants";
 import CompanyProfile from "./pages/recruiter/CompanyProfile";
+import Interviews from "./pages/recruiter/Interviews";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
 import ManageRecruiters from "./pages/admin/ManageRecruiters";
+import InstitutionProfile from "./pages/admin/InstitutionProfile";
+import Reports from "./pages/admin/Reports";
 
 const queryClient = new QueryClient();
 
@@ -56,11 +59,14 @@ const App = () => (
           <Route path="/dashboard/recruiter/jobs" element={<RecruiterJobs />} />
           <Route path="/dashboard/recruiter/jobs/:jobId/applicants" element={<Applicants />} />
           <Route path="/dashboard/recruiter/company" element={<CompanyProfile />} />
+          <Route path="/dashboard/recruiter/interviews" element={<Interviews />} />
           
           {/* Admin Routes */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/admin/students" element={<ManageStudents />} />
           <Route path="/dashboard/admin/recruiters" element={<ManageRecruiters />} />
+          <Route path="/dashboard/admin/profile" element={<InstitutionProfile />} />
+          <Route path="/dashboard/admin/reports" element={<Reports />} />
           
           {/* Shared Routes */}
           <Route path="/messages" element={<Messages />} />

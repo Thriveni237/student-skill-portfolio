@@ -21,7 +21,9 @@ import {
   MessageSquare,
   Settings,
   Building2,
-  FileDown
+  FileDown,
+  Calendar,
+  PieChart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -50,16 +52,19 @@ const studentNav: NavItem[] = [
 const recruiterNav: NavItem[] = [
   { label: 'Talent Search', href: '/dashboard/recruiter', icon: Search },
   { label: 'Company Profile', href: '/dashboard/recruiter/company', icon: Building2 },
-  { label: 'Saved Profiles', href: '/dashboard/recruiter/saved', icon: Award },
   { label: 'Job Postings', href: '/dashboard/recruiter/jobs', icon: Briefcase },
+  { label: 'Interviews', href: '/dashboard/recruiter/interviews', icon: Calendar },
+  { label: 'Saved Profiles', href: '/dashboard/recruiter/saved', icon: Award },
   { label: 'Messages', href: '/messages', icon: MessageSquare },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 const adminNav: NavItem[] = [
   { label: 'Overview', href: '/dashboard/admin', icon: BarChart3 },
+  { label: 'Reports', href: '/dashboard/admin/reports', icon: PieChart },
   { label: 'Manage Students', href: '/dashboard/admin/students', icon: Users },
   { label: 'Manage Recruiters', href: '/dashboard/admin/recruiters', icon: Building2 },
+  { label: 'Institution Profile', href: '/dashboard/admin/profile', icon: GraduationCap },
   { label: 'Messages', href: '/messages', icon: MessageSquare },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
