@@ -7,6 +7,8 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import StudentDashboard from "./pages/student/Dashboard";
+import Skills from "./pages/student/Skills";
 
 const queryClient = new QueryClient();
 
@@ -21,8 +23,12 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           
-          {/* Placeholder for Dashboard - will be role-based later */}
-          <Route path="/dashboard" element={<div className="p-8">Dashboard Placeholder - Coming Soon</div>} />
+          {/* Student Routes */}
+          <Route path="/dashboard/student" element={<StudentDashboard />} />
+          <Route path="/dashboard/student/skills" element={<Skills />} />
+          
+          {/* Redirect generic dashboard to student for now */}
+          <Route path="/dashboard" element={<Navigate to="/dashboard/student" replace />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
