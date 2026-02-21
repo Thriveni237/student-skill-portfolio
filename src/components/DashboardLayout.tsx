@@ -15,7 +15,8 @@ import {
   BarChart3,
   Users,
   Menu,
-  X
+  X,
+  Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -33,12 +34,14 @@ const studentNav: NavItem[] = [
   { label: 'Skills', href: '/dashboard/student/skills', icon: Code2 },
   { label: 'Projects', href: '/dashboard/student/projects', icon: FolderRoot },
   { label: 'Certifications', href: '/dashboard/student/certs', icon: Award },
+  { label: 'Jobs', href: '/dashboard/student/jobs', icon: Briefcase },
   { label: 'Preview Portfolio', href: '/portfolio/preview', icon: Eye },
 ];
 
 const recruiterNav: NavItem[] = [
   { label: 'Talent Search', href: '/dashboard/recruiter', icon: Search },
   { label: 'Saved Profiles', href: '/dashboard/recruiter/saved', icon: Award },
+  { label: 'Job Postings', href: '/dashboard/recruiter/jobs', icon: Briefcase },
 ];
 
 const adminNav: NavItem[] = [
