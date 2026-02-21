@@ -25,7 +25,7 @@ import {
   PieChart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/utils/toast';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
