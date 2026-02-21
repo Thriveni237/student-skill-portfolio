@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   Briefcase,
-  FileText
+  FileText,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -37,6 +38,7 @@ const studentNav: NavItem[] = [
   { label: 'Certifications', href: '/dashboard/student/certs', icon: Award },
   { label: 'Jobs', href: '/dashboard/student/jobs', icon: Briefcase },
   { label: 'My Applications', href: '/dashboard/student/applications', icon: FileText },
+  { label: 'Messages', href: '/messages', icon: MessageSquare },
   { label: 'Preview Portfolio', href: '/portfolio/preview', icon: Eye },
 ];
 
@@ -44,11 +46,13 @@ const recruiterNav: NavItem[] = [
   { label: 'Talent Search', href: '/dashboard/recruiter', icon: Search },
   { label: 'Saved Profiles', href: '/dashboard/recruiter/saved', icon: Award },
   { label: 'Job Postings', href: '/dashboard/recruiter/jobs', icon: Briefcase },
+  { label: 'Messages', href: '/messages', icon: MessageSquare },
 ];
 
 const adminNav: NavItem[] = [
   { label: 'Overview', href: '/dashboard/admin', icon: BarChart3 },
   { label: 'Manage Students', href: '/dashboard/admin/students', icon: Users },
+  { label: 'Messages', href: '/messages', icon: MessageSquare },
 ];
 
 const DashboardLayout = ({ children, role = 'student' }: { children: React.ReactNode, role?: 'student' | 'recruiter' | 'admin' }) => {

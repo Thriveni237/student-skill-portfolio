@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,14 @@ const RecruiterDashboard = () => {
     }
   ];
 
+  const filteredStudents = useMemo(() => {
+    return students.filter(student => 
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [searchQuery]);
+
   const toggleSave = (id: string) => {
     setSavedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
@@ -70,52 +78,58 @@ const RecruiterDashboard = () => {
         </div>
 
         <div className="grid gap-6">
-          {students.map((student) => (
-            <Card key={student.id} className="border-none shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                  <Avatar className="w-16 h-16 border">
-                    <AvatarImage src={student.avatar} />
-                    <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-slate-900">{student.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleSave(student.id)}
-                          className={savedIds.includes(student.id) ? "text-blue-600" : "text-slate-400"}
-                        >
-                          {savedIds.includes(student.id) ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
-                        </Button>
-                        <Link to="/portfolio/preview">
-                          <Button variant="outline" size="sm">
-                            <ExternalLink className="w-4 h-4 mr-2" /> View Portfolio
+          {filteredStudents.length > 0 ? (
+            filteredStudents.map((student) => (
+              <Card key={student.id} className="border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <Avatar className="w-16 h-16 border">
+                      <AvatarImage src={student.avatar} />
+                      <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-slate-900">{student.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => toggleSave(student.id)}
+                            className={savedIds.includes(student.id) ? "text-blue-600" : "text-slate-400"}
+                          >
+                            {savedIds.includes(student.id) ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
                           </Button>
-                        </Link>
+                          <Link to="/portfolio/preview">
+                            <Button variant="outline" size="sm">
+                              <ExternalLink className="w-4 h-4 mr-2" /> View Portfolio
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <p className="text-blue-600 font-medium">{student.role}</p>
-                    
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                      <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {student.location}</span>
-                      <div className="flex gap-2">
-                        {student.skills.map(skill => (
-                          <Badge key={skill} variant="secondary" className="font-normal bg-slate-100">
-                            {skill}
-                          </Badge>
-                        ))}
+                      
+                      <p className="text-blue-600 font-medium">{student.role}</p>
+                      
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {student.location}</span>
+                        <div className="flex gap-2">
+                          {student.skills.map(skill => (
+                            <Badge key={skill} variant="secondary" className="font-normal bg-slate-100">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-20 bg-white rounded-2xl border border-dashed">
+              <p className="text-slate-500">No candidates found matching your search.</p>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

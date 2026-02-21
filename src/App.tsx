@@ -14,6 +14,7 @@ import Certifications from "./pages/student/Certifications";
 import Profile from "./pages/student/Profile";
 import Jobs from "./pages/student/Jobs";
 import Applications from "./pages/student/Applications";
+import Messages from "./pages/Messages";
 import PortfolioPreview from "./pages/PortfolioPreview";
 import RecruiterDashboard from "./pages/recruiter/Dashboard";
 import SavedProfiles from "./pages/recruiter/SavedProfiles";
@@ -53,6 +54,9 @@ const App = () => (
           {/* Admin Routes */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/admin/students" element={<ManageStudents />} />
+          
+          {/* Shared Routes */}
+          <Route path="/messages" element={<Messages />} />
           
           {/* Public/Preview Routes */}
           <Route path="/portfolio/preview" element={<PortfolioPreview />} />
