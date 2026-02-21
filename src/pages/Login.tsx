@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Loader2, Play } from 'lucide-react';
+import { GraduationCap, Loader2, Play, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { showError, showSuccess } from '@/utils/toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -15,12 +16,14 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [unconfirmed, setUnconfirmed] = useState(false);
   const navigate = useNavigate();
   const { setDemoMode } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setUnconfirmed(false);
     
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -28,7 +31,13 @@ const Login = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("Email not confirmed")) {
+          setUnconfirmed(true);
+          throw new Error("Please confirm your email address before logging in.");
+        }
+        throw error;
+      }
 
       const userRole = data.user?.user_metadata?.role || 'student';
       showSuccess(`Welcome back to SkillPort!`);
@@ -49,6 +58,18 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md space-y-8">
+        {unconfirmed && (
+          <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-800">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertTitle>Email Confirmation Required</AlertTitle>
+            <AlertDescription className="text-xs">
+              Check your inbox for a verification link. 
+              <br /><br />
+              <b>Pro Tip:</b> To disable this for your presentation, go to <b>Supabase > Auth > Settings</b> and turn off <b>"Confirm Email"</b>.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Card className="border-none shadow-xl">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
