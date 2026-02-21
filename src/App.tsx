@@ -14,14 +14,18 @@ import Certifications from "./pages/student/Certifications";
 import Profile from "./pages/student/Profile";
 import Jobs from "./pages/student/Jobs";
 import Applications from "./pages/student/Applications";
+import ResumeBuilder from "./pages/student/ResumeBuilder";
 import Messages from "./pages/Messages";
+import Settings from "./pages/Settings";
 import PortfolioPreview from "./pages/PortfolioPreview";
 import RecruiterDashboard from "./pages/recruiter/Dashboard";
 import SavedProfiles from "./pages/recruiter/SavedProfiles";
 import RecruiterJobs from "./pages/recruiter/Jobs";
 import Applicants from "./pages/recruiter/Applicants";
+import CompanyProfile from "./pages/recruiter/CompanyProfile";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
+import ManageRecruiters from "./pages/admin/ManageRecruiters";
 
 const queryClient = new QueryClient();
 
@@ -44,19 +48,23 @@ const App = () => (
           <Route path="/dashboard/student/certs" element={<Certifications />} />
           <Route path="/dashboard/student/jobs" element={<Jobs />} />
           <Route path="/dashboard/student/applications" element={<Applications />} />
+          <Route path="/dashboard/student/resume" element={<ResumeBuilder />} />
           
           {/* Recruiter Routes */}
           <Route path="/dashboard/recruiter" element={<RecruiterDashboard />} />
           <Route path="/dashboard/recruiter/saved" element={<SavedProfiles />} />
           <Route path="/dashboard/recruiter/jobs" element={<RecruiterJobs />} />
           <Route path="/dashboard/recruiter/jobs/:jobId/applicants" element={<Applicants />} />
+          <Route path="/dashboard/recruiter/company" element={<CompanyProfile />} />
           
           {/* Admin Routes */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/admin/students" element={<ManageStudents />} />
+          <Route path="/dashboard/admin/recruiters" element={<ManageRecruiters />} />
           
           {/* Shared Routes */}
           <Route path="/messages" element={<Messages />} />
+          <Route path="/settings" element={<Settings />} />
           
           {/* Public/Preview Routes */}
           <Route path="/portfolio/preview" element={<PortfolioPreview />} />

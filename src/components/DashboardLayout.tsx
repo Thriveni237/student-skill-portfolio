@@ -18,7 +18,10 @@ import {
   X,
   Briefcase,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Settings,
+  Building2,
+  FileDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -36,23 +39,29 @@ const studentNav: NavItem[] = [
   { label: 'Skills', href: '/dashboard/student/skills', icon: Code2 },
   { label: 'Projects', href: '/dashboard/student/projects', icon: FolderRoot },
   { label: 'Certifications', href: '/dashboard/student/certs', icon: Award },
+  { label: 'Resume Builder', href: '/dashboard/student/resume', icon: FileDown },
   { label: 'Jobs', href: '/dashboard/student/jobs', icon: Briefcase },
   { label: 'My Applications', href: '/dashboard/student/applications', icon: FileText },
   { label: 'Messages', href: '/messages', icon: MessageSquare },
+  { label: 'Settings', href: '/settings', icon: Settings },
   { label: 'Preview Portfolio', href: '/portfolio/preview', icon: Eye },
 ];
 
 const recruiterNav: NavItem[] = [
   { label: 'Talent Search', href: '/dashboard/recruiter', icon: Search },
+  { label: 'Company Profile', href: '/dashboard/recruiter/company', icon: Building2 },
   { label: 'Saved Profiles', href: '/dashboard/recruiter/saved', icon: Award },
   { label: 'Job Postings', href: '/dashboard/recruiter/jobs', icon: Briefcase },
   { label: 'Messages', href: '/messages', icon: MessageSquare },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 const adminNav: NavItem[] = [
   { label: 'Overview', href: '/dashboard/admin', icon: BarChart3 },
   { label: 'Manage Students', href: '/dashboard/admin/students', icon: Users },
+  { label: 'Manage Recruiters', href: '/dashboard/admin/recruiters', icon: Building2 },
   { label: 'Messages', href: '/messages', icon: MessageSquare },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 const DashboardLayout = ({ children, role = 'student' }: { children: React.ReactNode, role?: 'student' | 'recruiter' | 'admin' }) => {
@@ -78,7 +87,7 @@ const DashboardLayout = ({ children, role = 'student' }: { children: React.React
           <span className="text-lg font-bold text-slate-900">SkillPort</span>
         </div>
         
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -123,7 +132,7 @@ const DashboardLayout = ({ children, role = 'student' }: { children: React.React
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 bg-white z-40 pt-20 p-4">
+        <div className="lg:hidden fixed inset-0 bg-white z-40 pt-20 p-4 overflow-y-auto">
           <nav className="space-y-2">
             {navItems.map((item) => (
               <Link
