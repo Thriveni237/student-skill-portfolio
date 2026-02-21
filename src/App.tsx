@@ -13,10 +13,12 @@ import Projects from "./pages/student/Projects";
 import Certifications from "./pages/student/Certifications";
 import Profile from "./pages/student/Profile";
 import Jobs from "./pages/student/Jobs";
+import Applications from "./pages/student/Applications";
 import PortfolioPreview from "./pages/PortfolioPreview";
 import RecruiterDashboard from "./pages/recruiter/Dashboard";
 import SavedProfiles from "./pages/recruiter/SavedProfiles";
 import RecruiterJobs from "./pages/recruiter/Jobs";
+import Applicants from "./pages/recruiter/Applicants";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
 
@@ -40,11 +42,13 @@ const App = () => (
           <Route path="/dashboard/student/projects" element={<Projects />} />
           <Route path="/dashboard/student/certs" element={<Certifications />} />
           <Route path="/dashboard/student/jobs" element={<Jobs />} />
+          <Route path="/dashboard/student/applications" element={<Applications />} />
           
           {/* Recruiter Routes */}
           <Route path="/dashboard/recruiter" element={<RecruiterDashboard />} />
           <Route path="/dashboard/recruiter/saved" element={<SavedProfiles />} />
           <Route path="/dashboard/recruiter/jobs" element={<RecruiterJobs />} />
+          <Route path="/dashboard/recruiter/jobs/:jobId/applicants" element={<Applicants />} />
           
           {/* Admin Routes */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />

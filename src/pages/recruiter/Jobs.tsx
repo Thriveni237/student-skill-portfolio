@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,9 @@ const RecruiterJobs = () => {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">View Applicants</Button>
+                      <Link to={`/dashboard/recruiter/jobs/${job.id}/applicants`}>
+                        <Button variant="outline" size="sm">View Applicants</Button>
+                      </Link>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">

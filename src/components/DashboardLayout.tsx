@@ -16,7 +16,8 @@ import {
   Users,
   Menu,
   X,
-  Briefcase
+  Briefcase,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ const studentNav: NavItem[] = [
   { label: 'Projects', href: '/dashboard/student/projects', icon: FolderRoot },
   { label: 'Certifications', href: '/dashboard/student/certs', icon: Award },
   { label: 'Jobs', href: '/dashboard/student/jobs', icon: Briefcase },
+  { label: 'My Applications', href: '/dashboard/student/applications', icon: FileText },
   { label: 'Preview Portfolio', href: '/portfolio/preview', icon: Eye },
 ];
 
