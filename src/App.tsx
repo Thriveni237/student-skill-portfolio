@@ -11,6 +11,8 @@ import StudentDashboard from "./pages/student/Dashboard";
 import Skills from "./pages/student/Skills";
 import Projects from "./pages/student/Projects";
 import Certifications from "./pages/student/Certifications";
+import Profile from "./pages/student/Profile";
+import PortfolioPreview from "./pages/PortfolioPreview";
 
 const queryClient = new QueryClient();
 
@@ -27,9 +29,13 @@ const App = () => (
           
           {/* Student Routes */}
           <Route path="/dashboard/student" element={<StudentDashboard />} />
+          <Route path="/dashboard/student/profile" element={<Profile />} />
           <Route path="/dashboard/student/skills" element={<Skills />} />
           <Route path="/dashboard/student/projects" element={<Projects />} />
           <Route path="/dashboard/student/certs" element={<Certifications />} />
+          
+          {/* Public/Preview Routes */}
+          <Route path="/portfolio/preview" element={<PortfolioPreview />} />
           
           {/* Redirect generic dashboard to student for now */}
           <Route path="/dashboard" element={<Navigate to="/dashboard/student" replace />} />
