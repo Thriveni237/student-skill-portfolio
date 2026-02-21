@@ -25,4 +25,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Project> projects;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Skill> skills;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Certification> certifications;
 }
