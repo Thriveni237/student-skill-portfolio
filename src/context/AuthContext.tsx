@@ -16,6 +16,17 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Mock user for Demo Mode to prevent errors in components
+const MOCK_USER: any = {
+  id: '00000000-0000-0000-0000-000000000000',
+  email: 'demo@skillport.edu',
+  user_metadata: {
+    first_name: 'Demo',
+    last_name: 'User',
+    avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100'
+  }
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -24,24 +35,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
-    // Check if there's a demo role in session storage
     const savedDemoRole = sessionStorage.getItem('demo_role');
+    
     if (savedDemoRole) {
       setRole(savedDemoRole);
       setIsDemo(true);
+      setUser({ ...MOCK_USER, user_metadata: { ...MOCK_USER.user_metadata, role: savedDemoRole } });
       setLoading(false);
       return;
     }
 
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setRole(session?.user?.user_metadata?.role ?? null);
-      setLoading(false);
+      if (!sessionStorage.getItem('demo_role')) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setRole(session?.user?.user_metadata?.role ?? null);
+        setLoading(false);
+      }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!sessionStorage.getItem('demo_role')) {
         setSession(session);
@@ -58,14 +70,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     sessionStorage.setItem('demo_role', demoRole);
     setRole(demoRole);
     setIsDemo(true);
+    setUser({ ...MOCK_USER, user_metadata: { ...MOCK_USER.user_metadata, role: demoRole } });
     setSession(null);
-    setUser(null);
   };
 
   const signOut = async () => {
     sessionStorage.removeItem('demo_role');
     setIsDemo(false);
     setRole(null);
+    setUser(null);
     await supabase.auth.signOut();
   };
 
