@@ -18,7 +18,6 @@ import {
   X,
   Briefcase,
   FileText,
-  MessageSquare,
   Settings,
   Building2,
   FileDown,
@@ -26,8 +25,7 @@ import {
   PieChart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { showSuccess } from '@/utils/toast';
+import { cn } from '@/utils/toast';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -46,7 +44,6 @@ const studentNav: NavItem[] = [
   { label: 'Resume Builder', href: '/dashboard/student/resume', icon: FileDown },
   { label: 'Jobs', href: '/dashboard/student/jobs', icon: Briefcase },
   { label: 'My Applications', href: '/dashboard/student/applications', icon: FileText },
-  { label: 'Messages', href: '/messages', icon: MessageSquare },
   { label: 'Settings', href: '/settings', icon: Settings },
   { label: 'Preview Portfolio', href: '/portfolio/preview', icon: Eye },
 ];
@@ -57,7 +54,6 @@ const recruiterNav: NavItem[] = [
   { label: 'Job Postings', href: '/dashboard/recruiter/jobs', icon: Briefcase },
   { label: 'Interviews', href: '/dashboard/recruiter/interviews', icon: Calendar },
   { label: 'Saved Profiles', href: '/dashboard/recruiter/saved', icon: Award },
-  { label: 'Messages', href: '/messages', icon: MessageSquare },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
@@ -67,7 +63,6 @@ const adminNav: NavItem[] = [
   { label: 'Manage Students', href: '/dashboard/admin/students', icon: Users },
   { label: 'Manage Recruiters', href: '/dashboard/admin/recruiters', icon: Building2 },
   { label: 'Institution Profile', href: '/dashboard/admin/profile', icon: GraduationCap },
-  { label: 'Messages', href: '/messages', icon: MessageSquare },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
@@ -82,7 +77,6 @@ const DashboardLayout = ({ children, role: propRole }: { children: React.ReactNo
 
   const handleLogout = async () => {
     await signOut();
-    showSuccess("Logged out successfully");
     navigate('/');
   };
 

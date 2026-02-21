@@ -1,17 +1,53 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, Eye, Layout, Palette, Settings2, Check } from 'lucide-react';
+import { Download, Eye, Layout, Settings2, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const ResumeBuilder = () => {
+  const { user } = useAuth();
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>({
+    profile: null,
+    skills: [],
+    projects: [],
+    certs: []
+  });
+
+  useEffect(() => {
+    if (user) fetchResumeData();
+  }, [user]);
+
+  const fetchResumeData = async () => {
+    try {
+      const [profileRes, skillsRes, projectsRes, certsRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user?.id).single(),
+        supabase.from('skills').select('*').eq('user_id', user?.id),
+        supabase.from('projects').select('*').eq('user_id', user?.id),
+        supabase.from('certifications').select('*').eq('user_id', user?.id)
+      ]);
+
+      setData({
+        profile: profileRes.data,
+        skills: skillsRes.data || [],
+        projects: projectsRes.data || [],
+        certs: certsRes.data || []
+      });
+    } catch (error) {
+      console.error("Error fetching resume data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const templates = [
     { id: 'modern', name: 'Modern Professional', color: 'bg-blue-600' },
@@ -26,6 +62,18 @@ const ResumeBuilder = () => {
       showSuccess("Resume downloaded successfully!");
     }, 1500);
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout role="student">
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const { profile, skills, projects, certs } = data;
 
   return (
     <DashboardLayout role="student">
@@ -107,63 +155,64 @@ const ResumeBuilder = () => {
           <div className="lg:col-span-2">
             <Card className="border-none shadow-xl min-h-[800px] bg-white overflow-hidden">
               <div className="p-12 space-y-8">
-                {/* Mock Resume Preview */}
+                {/* Real Resume Preview */}
                 <div className="flex justify-between items-start border-b pb-8">
                   <div>
-                    <h2 className="text-4xl font-bold text-slate-900">Alex Johnson</h2>
-                    <p className="text-xl text-blue-600 font-medium mt-1">Full Stack Developer</p>
+                    <h2 className="text-4xl font-bold text-slate-900">
+                      {profile?.first_name} {profile?.last_name}
+                    </h2>
+                    <p className="text-xl text-blue-600 font-medium mt-1">Student Portfolio</p>
                     <div className="flex gap-4 mt-4 text-sm text-slate-500">
-                      <span>alex.j@university.edu</span>
+                      <span>{user?.email}</span>
                       <span>•</span>
-                      <span>San Francisco, CA</span>
+                      <span>{profile?.location || 'Location not set'}</span>
                     </div>
                   </div>
-                  <div className="w-24 h-24 bg-slate-100 rounded-xl" />
+                  <div className="w-24 h-24 bg-slate-100 rounded-xl overflow-hidden">
+                    {profile?.avatar_url && <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />}
+                  </div>
                 </div>
 
                 <section className="space-y-3">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Professional Summary</h3>
                   <p className="text-slate-600 leading-relaxed">
-                    Passionate Full Stack Developer and UI/UX enthusiast. Currently pursuing Computer Science at Tech University. I love building scalable web applications and exploring new technologies.
+                    {profile?.bio || "No bio added yet."}
                   </p>
                 </section>
 
                 <section className="space-y-3">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Technical Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {['React.js', 'TypeScript', 'Tailwind CSS', 'Node.js', 'PostgreSQL'].map(skill => (
-                      <Badge key={skill} variant="outline" className="rounded-md border-slate-200 text-slate-700">
-                        {skill}
+                    {skills.length > 0 ? skills.map((skill: any) => (
+                      <Badge key={skill.id} variant="outline" className="rounded-md border-slate-200 text-slate-700">
+                        {skill.name} ({skill.level})
                       </Badge>
-                    ))}
+                    )) : <p className="text-sm text-slate-500">No skills added yet.</p>}
                   </div>
                 </section>
 
                 <section className="space-y-4">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Featured Projects</h3>
                   <div className="space-y-4">
-                    <div>
-                      <h4 className="font-bold text-slate-900">E-commerce Platform</h4>
-                      <p className="text-sm text-slate-600 mt-1">A full-stack e-commerce solution built with React and Node.js. Features include real-time inventory tracking and secure payment integration.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-900">Task Management App</h4>
-                      <p className="text-sm text-slate-600 mt-1">A collaborative task management tool with drag-and-drop functionality and team workspace features.</p>
-                    </div>
+                    {projects.length > 0 ? projects.map((project: any) => (
+                      <div key={project.id}>
+                        <h4 className="font-bold text-slate-900">{project.title}</h4>
+                        <p className="text-sm text-slate-600 mt-1">{project.description}</p>
+                        <p className="text-xs text-blue-600 mt-1">{project.tags}</p>
+                      </div>
+                    )) : <p className="text-sm text-slate-500">No projects added yet.</p>}
                   </div>
                 </section>
 
                 <section className="space-y-3">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Certifications</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-bold text-sm text-slate-900">AWS Certified Solutions Architect</p>
-                      <p className="text-xs text-slate-500">Amazon Web Services • 2023</p>
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-slate-900">Meta Front-End Developer</p>
-                      <p className="text-xs text-slate-500">Coursera • 2023</p>
-                    </div>
+                    {certs.length > 0 ? certs.map((cert: any) => (
+                      <div key={cert.id}>
+                        <p className="font-bold text-sm text-slate-900">{cert.name}</p>
+                        <p className="text-xs text-slate-500">{cert.issuer} • {cert.date}</p>
+                      </div>
+                    )) : <p className="text-sm text-slate-500">No certifications added yet.</p>}
                   </div>
                 </section>
               </div>

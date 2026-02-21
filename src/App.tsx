@@ -18,7 +18,6 @@ import Profile from "./pages/student/Profile";
 import Jobs from "./pages/student/Jobs";
 import Applications from "./pages/student/Applications";
 import ResumeBuilder from "./pages/student/ResumeBuilder";
-import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import PortfolioPreview from "./pages/PortfolioPreview";
 import RecruiterDashboard from "./pages/recruiter/Dashboard";
@@ -73,7 +72,6 @@ const App = () => (
             <Route path="/dashboard/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><Reports /></ProtectedRoute>} />
             
             {/* Shared Routes */}
-            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* Public/Preview Routes */}
