@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,30 +8,84 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Github, Linkedin, Globe, Mail, MapPin } from 'lucide-react';
-import { showSuccess } from '@/utils/toast';
+import { Camera, Github, Linkedin, Globe, MapPin, Loader2 } from 'lucide-react';
+import { showSuccess, showError } from '@/utils/toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 const Profile = () => {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [profile, setProfile] = useState({
-    fullName: 'Alex Johnson',
-    email: 'alex.j@university.edu',
-    bio: 'Passionate Full Stack Developer and UI/UX enthusiast. Currently pursuing Computer Science at Tech University.',
-    location: 'San Francisco, CA',
-    github: 'github.com/alexj',
-    linkedin: 'linkedin.com/in/alexj',
-    website: 'alexj.dev',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200'
+    first_name: '',
+    last_name: '',
+    bio: '',
+    location: '',
+    github: '',
+    linkedin: '',
+    website: '',
+    avatar_url: ''
   });
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      showSuccess("Profile updated successfully!");
-    }, 1000);
+  useEffect(() => {
+    if (user) fetchProfile();
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+      
+      if (error) throw error;
+      if (data) setProfile(data);
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setFetching(false);
+    }
   };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          bio: profile.bio,
+          location: profile.location,
+          github: profile.github,
+          linkedin: profile.linkedin,
+          website: profile.website,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      showSuccess("Profile updated successfully!");
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (fetching) {
+    return (
+      <DashboardLayout role="student">
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout role="student">
@@ -50,20 +104,19 @@ const Profile = () => {
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="firstName">First Name</Label>
                     <Input 
-                      id="fullName" 
-                      value={profile.fullName}
-                      onChange={e => setProfile({...profile, fullName: e.target.value})}
+                      id="firstName" 
+                      value={profile.first_name}
+                      onChange={e => setProfile({...profile, first_name: e.target.value})}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="lastName">Last Name</Label>
                     <Input 
-                      id="email" 
-                      type="email" 
-                      value={profile.email}
-                      disabled
+                      id="lastName" 
+                      value={profile.last_name}
+                      onChange={e => setProfile({...profile, last_name: e.target.value})}
                     />
                   </div>
                 </div>
@@ -74,7 +127,8 @@ const Profile = () => {
                     <Input 
                       id="location" 
                       className="pl-10"
-                      value={profile.location}
+                      placeholder="City, Country"
+                      value={profile.location || ''}
                       onChange={e => setProfile({...profile, location: e.target.value})}
                     />
                   </div>
@@ -84,7 +138,8 @@ const Profile = () => {
                   <Textarea 
                     id="bio" 
                     rows={4}
-                    value={profile.bio}
+                    placeholder="Tell us about yourself..."
+                    value={profile.bio || ''}
                     onChange={e => setProfile({...profile, bio: e.target.value})}
                   />
                 </div>
@@ -104,7 +159,8 @@ const Profile = () => {
                       <Input 
                         id="github" 
                         className="pl-10"
-                        value={profile.github}
+                        placeholder="github.com/username"
+                        value={profile.github || ''}
                         onChange={e => setProfile({...profile, github: e.target.value})}
                       />
                     </div>
@@ -116,7 +172,8 @@ const Profile = () => {
                       <Input 
                         id="linkedin" 
                         className="pl-10"
-                        value={profile.linkedin}
+                        placeholder="linkedin.com/in/username"
+                        value={profile.linkedin || ''}
                         onChange={e => setProfile({...profile, linkedin: e.target.value})}
                       />
                     </div>
@@ -129,7 +186,8 @@ const Profile = () => {
                     <Input 
                       id="website" 
                       className="pl-10"
-                      value={profile.website}
+                      placeholder="yourwebsite.com"
+                      value={profile.website || ''}
                       onChange={e => setProfile({...profile, website: e.target.value})}
                     />
                   </div>
@@ -139,7 +197,8 @@ const Profile = () => {
 
             <div className="flex justify-end">
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700 px-8" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Changes"}
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Save Changes
               </Button>
             </div>
           </div>
@@ -152,8 +211,10 @@ const Profile = () => {
               <CardContent className="flex flex-col items-center py-8">
                 <div className="relative group">
                   <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                    <AvatarImage src={profile.avatar} />
-                    <AvatarFallback className="text-2xl bg-blue-100 text-blue-600">AJ</AvatarFallback>
+                    <AvatarImage src={profile.avatar_url} />
+                    <AvatarFallback className="text-2xl bg-blue-100 text-blue-600">
+                      {profile.first_name?.[0]}{profile.last_name?.[0]}
+                    </AvatarFallback>
                   </Avatar>
                   <button className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors">
                     <Camera className="w-4 h-4" />
@@ -162,18 +223,6 @@ const Profile = () => {
                 <p className="mt-4 text-sm text-slate-500 text-center">
                   JPG, GIF or PNG. Max size of 2MB.
                 </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm bg-blue-600 text-white">
-              <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-2">Portfolio Visibility</h3>
-                <p className="text-blue-100 text-sm mb-4">
-                  Your portfolio is currently public and can be viewed by verified recruiters.
-                </p>
-                <Button variant="secondary" className="w-full bg-white text-blue-600 hover:bg-blue-50">
-                  View Public Profile
-                </Button>
               </CardContent>
             </Card>
           </div>
