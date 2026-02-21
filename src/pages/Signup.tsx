@@ -47,7 +47,11 @@ const Signup = () => {
       showSuccess("Registration successful! Please check your email for verification.");
       navigate('/login');
     } catch (error: any) {
-      showError(error.message || "Failed to create account");
+      if (error.message === 'Failed to fetch') {
+        showError("Connection error: Please make sure you have clicked 'Add Supabase' to connect your database.");
+      } else {
+        showError(error.message || "Failed to create account");
+      }
     } finally {
       setIsLoading(false);
     }
