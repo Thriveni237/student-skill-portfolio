@@ -2,37 +2,49 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Loader2, User, Briefcase, ShieldCheck } from 'lucide-react';
+import { GraduationCap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [role, setRole] = useState<string>("student");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Mock login logic
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      // Fetch user role from metadata or a profiles table
+      const userRole = data.user?.user_metadata?.role || 'student';
+      
       showSuccess(`Welcome back to SkillPort!`);
       
-      // Redirect based on selected role
-      if (role === 'recruiter') {
+      if (userRole === 'recruiter') {
         navigate('/dashboard/recruiter');
-      } else if (role === 'admin') {
+      } else if (userRole === 'admin') {
         navigate('/dashboard/admin');
       } else {
         navigate('/dashboard/student');
       }
-    }, 1000);
+    } catch (error: any) {
+      showError(error.message || "Invalid login credentials");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -51,39 +63,27 @@ const Login = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="name@example.com" required />
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="name@example.com" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
                 <Button variant="link" className="px-0 font-normal text-xs text-blue-600">Forgot password?</Button>
               </div>
-              <Input id="password" type="password" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Login as</Label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4" /> Student
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="recruiter">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" /> Recruiter
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="admin">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4" /> College Admin
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
