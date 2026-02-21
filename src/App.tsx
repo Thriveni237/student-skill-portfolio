@@ -14,7 +14,9 @@ import Certifications from "./pages/student/Certifications";
 import Profile from "./pages/student/Profile";
 import PortfolioPreview from "./pages/PortfolioPreview";
 import RecruiterDashboard from "./pages/recruiter/Dashboard";
+import SavedProfiles from "./pages/recruiter/SavedProfiles";
 import AdminDashboard from "./pages/admin/Dashboard";
+import ManageStudents from "./pages/admin/ManageStudents";
 
 const queryClient = new QueryClient();
 
@@ -38,9 +40,11 @@ const App = () => (
           
           {/* Recruiter Routes */}
           <Route path="/dashboard/recruiter" element={<RecruiterDashboard />} />
+          <Route path="/dashboard/recruiter/saved" element={<SavedProfiles />} />
           
           {/* Admin Routes */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard/admin/students" element={<ManageStudents />} />
           
           {/* Public/Preview Routes */}
           <Route path="/portfolio/preview" element={<PortfolioPreview />} />
