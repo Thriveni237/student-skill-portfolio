@@ -74,7 +74,7 @@ const Login = () => {
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-blue-600 p-2 rounded-xl">
-                < GraduationCap className="text-white w-8 h-8" />
+                <GraduationCap className="text-white w-8 h-8" />
               </div>
             </div>
             <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
