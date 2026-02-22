@@ -2,15 +2,14 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Loader2, User, Briefcase, ShieldCheck, Play, AlertCircle } from 'lucide-react';
+import { GraduationCap, Loader2, User, Briefcase, ShieldCheck, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { showError, showSuccess } from '@/utils/toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
 const Signup = () => {
@@ -33,21 +32,15 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
+      await api.post('/users/signup', {
         email,
         password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            role: role,
-          }
-        }
+        firstName,
+        lastName,
+        role
       });
 
-      if (error) throw error;
-
-      showSuccess("Registration successful! Please check your email for verification.");
+      showSuccess("Registration successful! You can now log in.");
       navigate('/login');
     } catch (error: any) {
       showError(error.message || "Failed to create account");
@@ -65,14 +58,6 @@ const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md space-y-6">
-        <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-800">
-          <AlertCircle className="h-4 w-4 text-amber-600" />
-          <AlertTitle>Supabase Rate Limit Notice</AlertTitle>
-          <AlertDescription className="text-xs">
-            If you see "Email rate limit exceeded", please use the <b>Presentation Mode</b> buttons below to bypass the error and show your work.
-          </AlertDescription>
-        </Alert>
-
         <Card className="border-none shadow-xl">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
@@ -174,7 +159,7 @@ const Signup = () => {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-slate-50 px-2 text-blue-600 font-bold">Presentation Mode (Bypass Error)</span>
+            <span className="bg-slate-50 px-2 text-blue-600 font-bold">Presentation Mode</span>
           </div>
         </div>
 

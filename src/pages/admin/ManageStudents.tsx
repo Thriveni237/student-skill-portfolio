@@ -17,7 +17,6 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Search, 
   MoreVertical, 
-  UserCheck, 
   UserX, 
   Mail,
   Download,
@@ -30,7 +29,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { showSuccess, showError } from '@/utils/toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 
 const ManageStudents = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,12 +42,7 @@ const ManageStudents = () => {
 
   const fetchStudents = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'student');
-      
-      if (error) throw error;
+      const data = await api.get('/users?role=student');
       setStudents(data || []);
     } catch (error: any) {
       showError(error.message);
@@ -58,7 +52,7 @@ const ManageStudents = () => {
   };
 
   const filteredStudents = students.filter(s => 
-    `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+    `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleStatusToggle = (name: string) => {
@@ -71,7 +65,7 @@ const ManageStudents = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Manage Students</h1>
-            <p className="text-slate-500">View and manage real student accounts from the database.</p>
+            <p className="text-slate-500">View and manage student accounts from your local database.</p>
           </div>
           <Button variant="outline" className="gap-2">
             <Download className="w-4 h-4" /> Export Data
@@ -111,7 +105,7 @@ const ManageStudents = () => {
                       <TableRow key={student.id}>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-medium text-slate-900">{student.first_name} {student.last_name}</span>
+                            <span className="font-medium text-slate-900">{student.firstName} {student.lastName}</span>
                           </div>
                         </TableCell>
                         <TableCell className="capitalize">{student.role}</TableCell>
@@ -133,7 +127,7 @@ const ManageStudents = () => {
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 className="gap-2"
-                                onClick={() => handleStatusToggle(student.first_name)}
+                                onClick={() => handleStatusToggle(student.firstName)}
                               >
                                 <UserX className="w-4 h-4 text-red-500" /> Deactivate
                               </DropdownMenuItem>
