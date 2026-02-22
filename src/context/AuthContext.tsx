@@ -1,89 +1,78 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  user: any | null;
   role: string | null;
   loading: boolean;
   isDemo: boolean;
-  signOut: () => Promise<void>;
+  signOut: () => void;
   setDemoMode: (role: string) => void;
+  login: (credentials: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user for Demo Mode to prevent errors in components
-const MOCK_USER: any = {
-  id: '00000000-0000-0000-0000-000000000000',
-  email: 'demo@skillport.edu',
-  user_metadata: {
-    first_name: 'Demo',
-    last_name: 'User',
-    avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100'
-  }
-};
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
-    const savedDemoRole = sessionStorage.getItem('demo_role');
-    
-    if (savedDemoRole) {
-      setRole(savedDemoRole);
-      setIsDemo(true);
-      setUser({ ...MOCK_USER, user_metadata: { ...MOCK_USER.user_metadata, role: savedDemoRole } });
+    const checkAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+      const demoRole = sessionStorage.getItem('demo_role');
+
+      if (demoRole) {
+        setDemoMode(demoRole);
+        setLoading(false);
+        return;
+      }
+
+      if (token) {
+        try {
+          // In a real app, you'd have a /me endpoint to verify the token
+          // const userData = await api.get('/auth/me');
+          // setUser(userData);
+          // setRole(userData.role);
+        } catch (err) {
+          localStorage.removeItem('auth_token');
+        }
+      }
       setLoading(false);
-      return;
-    }
+    };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!sessionStorage.getItem('demo_role')) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setRole(session?.user?.user_metadata?.role ?? null);
-        setLoading(false);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!sessionStorage.getItem('demo_role')) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setRole(session?.user?.user_metadata?.role ?? null);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
+
+  const login = async (credentials: any) => {
+    // This would call your local MySQL-backed API
+    // const { user, token } = await api.post('/auth/login', credentials);
+    // localStorage.setItem('auth_token', token);
+    // setUser(user);
+    // setRole(user.role);
+  };
 
   const setDemoMode = (demoRole: string) => {
     sessionStorage.setItem('demo_role', demoRole);
     setRole(demoRole);
     setIsDemo(true);
-    setUser({ ...MOCK_USER, user_metadata: { ...MOCK_USER.user_metadata, role: demoRole } });
-    setSession(null);
+    setUser({ id: 'demo', first_name: 'Demo', last_name: 'User', role: demoRole });
   };
 
-  const signOut = async () => {
+  const signOut = () => {
+    localStorage.removeItem('auth_token');
     sessionStorage.removeItem('demo_role');
-    setIsDemo(false);
-    setRole(null);
     setUser(null);
-    await supabase.auth.signOut();
+    setRole(null);
+    setIsDemo(false);
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, role, loading, isDemo, signOut, setDemoMode }}>
+    <AuthContext.Provider value={{ user, role, loading, isDemo, signOut, setDemoMode, login }}>
       {children}
     </AuthContext.Provider>
   );

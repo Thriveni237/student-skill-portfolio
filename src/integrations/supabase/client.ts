@@ -1,7 +1,0 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Hardcoded credentials to ensure immediate connectivity
-const SUPABASE_URL = "https://pubrozwmsjuavwrkuikr.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1YnJvendtc2p1YXZ3cmt1aWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NzQ5NTksImV4cCI6MjA4NzI1MDk1OX0.zSQYaS7kTChrFu3gL5f9ZD-1c7cHX31igpkeUY8kSac";
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);

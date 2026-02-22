@@ -11,7 +11,7 @@ import { Plus, Trash2, Code2, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
 interface Skill {
@@ -21,25 +21,20 @@ interface Skill {
 }
 
 const Skills = () => {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isDemo);
   const [adding, setAdding] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [newLevel, setNewLevel] = useState('Beginner');
 
   useEffect(() => {
-    if (user) fetchSkills();
-  }, [user]);
+    if (user && !isDemo) fetchSkills();
+  }, [user, isDemo]);
 
   const fetchSkills = async () => {
     try {
-      const { data, error } = await supabase
-        .from('skills')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
+      const data = await api.get('/skills');
       setSkills(data || []);
     } catch (error: any) {
       showError(error.message);
@@ -49,21 +44,20 @@ const Skills = () => {
   };
 
   const handleAddSkill = async () => {
-    if (!newSkill || !user) return;
+    if (!newSkill) return;
+    
+    if (isDemo) {
+      const mockSkill = { id: Math.random().toString(), name: newSkill, level: newLevel };
+      setSkills([mockSkill, ...skills]);
+      setNewSkill('');
+      showSuccess(`Added ${newSkill} (Demo Mode)`);
+      return;
+    }
+
     setAdding(true);
     try {
-      const { data, error } = await supabase
-        .from('skills')
-        .insert([{ 
-          name: newSkill, 
-          level: newLevel,
-          user_id: user.id 
-        }])
-        .select();
-
-      if (error) throw error;
-      
-      setSkills([data[0], ...skills]);
+      const data = await api.post('/skills', { name: newSkill, level: newLevel });
+      setSkills([data, ...skills]);
       setNewSkill('');
       showSuccess(`Added ${newSkill} to your skills!`);
     } catch (error: any) {
@@ -74,13 +68,14 @@ const Skills = () => {
   };
 
   const removeSkill = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('skills')
-        .delete()
-        .eq('id', id);
+    if (isDemo) {
+      setSkills(skills.filter(s => s.id !== id));
+      showSuccess("Skill removed (Demo Mode)");
+      return;
+    }
 
-      if (error) throw error;
+    try {
+      await api.delete(`/skills/${id}`);
       setSkills(skills.filter(s => s.id !== id));
       showSuccess("Skill removed");
     } catch (error: any) {
