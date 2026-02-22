@@ -65,7 +65,7 @@ const Login = () => {
             <AlertDescription className="text-xs">
               Check your inbox for a verification link. 
               <br /><br />
-              <b>Pro Tip:</b> To disable this for your presentation, go to <b>Supabase > Auth > Settings</b> and turn off <b>"Confirm Email"</b>.
+              <b>Pro Tip:</b> To disable this for your presentation, go to <b>Supabase {" > "} Auth {" > "} Settings</b> and turn off <b>"Confirm Email"</b>.
             </AlertDescription>
           </Alert>
         )}
