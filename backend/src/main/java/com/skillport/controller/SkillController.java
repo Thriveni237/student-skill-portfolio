@@ -8,15 +8,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/skills")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173") // Allow React frontend
 public class SkillController {
 
     @Autowired
     private SkillRepository skillRepository;
 
-    @GetMapping("/user/{userId}")
-    public List<Skill> getSkillsByUser(@PathVariable Long userId) {
-        return skillRepository.findByUserId(userId);
+    @GetMapping
+    public List<Skill> getAllSkills() {
+        // In a real app, filter by logged-in user ID
+        return skillRepository.findAll();
     }
 
     @PostMapping
@@ -25,7 +26,7 @@ public class SkillController {
     }
 
     @DeleteMapping("/{id}")
-    public void removeSkill(@PathVariable Long id) {
+    public void deleteSkill(@PathVariable Long id) {
         skillRepository.deleteById(id);
     }
 }

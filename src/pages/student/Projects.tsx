@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, ExternalLink, Github, FolderRoot, Loader2 } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
 interface Project {
@@ -22,9 +22,9 @@ interface Project {
 }
 
 const Projects = () => {
-  const { user } = useAuth();
+  const { isDemo } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isDemo);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -35,16 +35,12 @@ const Projects = () => {
   });
 
   useEffect(() => {
-    if (user) fetchProjects();
-  }, [user]);
+    if (!isDemo) fetchProjects();
+  }, [isDemo]);
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
+      const data = await api.get('/projects');
       setProjects(data || []);
     } catch (error: any) {
       showError(error.message);
@@ -55,29 +51,33 @@ const Projects = () => {
 
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert([{ ...formData, user_id: user.id }])
-        .select();
+    if (isDemo) {
+      setProjects([{ ...formData, id: Math.random().toString() }, ...projects]);
+      setIsAdding(false);
+      showSuccess("Project added (Demo)");
+      return;
+    }
 
-      if (error) throw error;
-      setProjects([data[0], ...projects]);
+    try {
+      const data = await api.post('/projects', formData);
+      setProjects([data, ...projects]);
       setFormData({ title: '', description: '', link: '', github: '', tags: '' });
       setIsAdding(false);
-      showSuccess("Project added successfully!");
+      showSuccess("Project saved to database!");
     } catch (error: any) {
       showError(error.message);
     }
   };
 
   const removeProject = async (id: string) => {
-    try {
-      const { error } = await supabase.from('projects').delete().eq('id', id);
-      if (error) throw error;
+    if (isDemo) {
       setProjects(projects.filter(p => p.id !== id));
-      showSuccess("Project removed");
+      return;
+    }
+    try {
+      await api.delete(`/projects/${id}`);
+      setProjects(projects.filter(p => p.id !== id));
+      showSuccess("Project deleted");
     } catch (error: any) {
       showError(error.message);
     }
@@ -87,72 +87,31 @@ const Projects = () => {
     <DashboardLayout role="student">
       <div className="space-y-8">
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Projects</h1>
-            <p className="text-slate-500">Showcase your best work to potential recruiters.</p>
-          </div>
+          <h1 className="text-3xl font-bold text-slate-900">Projects</h1>
           <Button onClick={() => setIsAdding(!isAdding)} className="bg-blue-600 hover:bg-blue-700">
             {isAdding ? 'Cancel' : <><Plus className="w-4 h-4 mr-2" /> Add Project</>}
           </Button>
         </div>
 
         {isAdding && (
-          <Card className="border-none shadow-md animate-in fade-in slide-in-from-top-4">
-            <CardHeader>
-              <CardTitle>New Project Details</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="border-none shadow-md">
+            <CardContent className="pt-6">
               <form onSubmit={handleAddProject} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Project Title</Label>
-                    <Input 
-                      id="title" 
-                      required 
-                      value={formData.title}
-                      onChange={e => setFormData({...formData, title: e.target.value})}
-                    />
+                    <Label>Title</Label>
+                    <Input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tags">Tags (comma separated)</Label>
-                    <Input 
-                      id="tags" 
-                      placeholder="React, Tailwind, TypeScript" 
-                      value={formData.tags}
-                      onChange={e => setFormData({...formData, tags: e.target.value})}
-                    />
+                    <Label>Tags</Label>
+                    <Input placeholder="React, Java, MySQL" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea 
-                    id="description" 
-                    required 
-                    value={formData.description}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                  />
+                  <Label>Description</Label>
+                  <Textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="link">Live Demo URL</Label>
-                    <Input 
-                      id="link" 
-                      type="url" 
-                      value={formData.link}
-                      onChange={e => setFormData({...formData, link: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="github">GitHub Repository</Label>
-                    <Input 
-                      id="github" 
-                      type="url" 
-                      value={formData.github}
-                      onChange={e => setFormData({...formData, github: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Save Project</Button>
+                <Button type="submit" className="w-full bg-blue-600">Save Project</Button>
               </form>
             </CardContent>
           </Card>
@@ -163,47 +122,20 @@ const Projects = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {projects.map((project) => (
-              <Card key={project.id} className="border-none shadow-sm hover:shadow-md transition-all group">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <FolderRoot className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeProject(project.id)}
-                    >
+              <Card key={project.id} className="border-none shadow-sm group">
+                <CardHeader>
+                  <div className="flex justify-between">
+                    <FolderRoot className="w-6 h-6 text-blue-600" />
+                    <Button variant="ghost" size="icon" onClick={() => removeProject(project.id)} className="opacity-0 group-hover:opacity-100 text-red-500">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <CardTitle className="mt-4">{project.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">{project.description}</CardDescription>
+                  <CardTitle className="mt-2">{project.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tags.split(',').map(tag => (
-                      <span key={tag} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-md">
-                        {tag.trim()}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-3">
-                    {project.link && (
-                      <Button variant="outline" size="sm" className="flex-1" asChild>
-                        <a href={project.link} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-3 h-3 mr-2" /> Demo
-                        </a>
-                      </Button>
-                    )}
-                    {project.github && (
-                      <Button variant="outline" size="sm" className="flex-1" asChild>
-                        <a href={project.github} target="_blank" rel="noopener noreferrer">
-                          <Github className="w-3 h-3 mr-2" /> Code
-                        </a>
-                      </Button>
-                    )}
+                  <p className="text-slate-600 text-sm mb-4">{project.description}</p>
+                  <div className="flex gap-2">
+                    {project.github && <Button variant="outline" size="sm" asChild><a href={project.github}><Github className="w-3 h-3 mr-2" /> Code</a></Button>}
                   </div>
                 </CardContent>
               </Card>
