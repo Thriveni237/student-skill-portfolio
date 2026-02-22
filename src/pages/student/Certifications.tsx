@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Award, Calendar, ExternalLink, Loader2 } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
 interface Certification {
@@ -20,9 +20,9 @@ interface Certification {
 }
 
 const Certifications = () => {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const [certs, setCerts] = useState<Certification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isDemo);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -32,16 +32,12 @@ const Certifications = () => {
   });
 
   useEffect(() => {
-    if (user) fetchCerts();
-  }, [user]);
+    if (user && !isDemo) fetchCerts();
+  }, [user, isDemo]);
 
   const fetchCerts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('certifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
+      const data = await api.get('/certifications');
       setCerts(data || []);
     } catch (error: any) {
       showError(error.message);
@@ -52,15 +48,16 @@ const Certifications = () => {
 
   const handleAddCert = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from('certifications')
-        .insert([{ ...formData, user_id: user.id }])
-        .select();
+    if (isDemo) {
+      setCerts([{ ...formData, id: Math.random().toString() }, ...certs]);
+      setIsAdding(false);
+      showSuccess("Certification added (Demo)");
+      return;
+    }
 
-      if (error) throw error;
-      setCerts([data[0], ...certs]);
+    try {
+      const data = await api.post('/certifications', formData);
+      setCerts([data, ...certs]);
       setFormData({ name: '', issuer: '', date: '', link: '' });
       setIsAdding(false);
       showSuccess("Certification added successfully!");
@@ -70,9 +67,12 @@ const Certifications = () => {
   };
 
   const removeCert = async (id: string) => {
+    if (isDemo) {
+      setCerts(certs.filter(c => c.id !== id));
+      return;
+    }
     try {
-      const { error } = await supabase.from('certifications').delete().eq('id', id);
-      if (error) throw error;
+      await api.delete(`/certifications/${id}`);
       setCerts(certs.filter(c => c.id !== id));
       showSuccess("Certification removed");
     } catch (error: any) {

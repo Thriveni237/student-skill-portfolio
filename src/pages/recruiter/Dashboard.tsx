@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Filter, MapPin, ExternalLink, Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { showError } from '@/utils/toast';
 
 const RecruiterDashboard = () => {
@@ -24,12 +24,7 @@ const RecruiterDashboard = () => {
 
   const fetchStudents = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'student');
-      
-      if (error) throw error;
+      const data = await api.get('/users?role=student');
       setStudents(data || []);
     } catch (error: any) {
       showError(error.message);
@@ -40,7 +35,7 @@ const RecruiterDashboard = () => {
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => 
-      `${student.first_name} ${student.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (student.bio && student.bio.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [searchQuery, students]);
@@ -85,16 +80,16 @@ const RecruiterDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                       <Avatar className="w-16 h-16 border">
-                        <AvatarImage src={student.avatar_url} />
+                        <AvatarImage src={student.avatarUrl} />
                         <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {student.first_name?.[0]}{student.last_name?.[0]}
+                          {student.firstName?.[0]}{student.lastName?.[0]}
                         </AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center justify-between">
                           <h3 className="text-xl font-bold text-slate-900">
-                            {student.first_name} {student.last_name}
+                            {student.firstName} {student.lastName}
                           </h3>
                           <div className="flex items-center gap-2">
                             <Button 

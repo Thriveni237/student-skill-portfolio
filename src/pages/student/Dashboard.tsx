@@ -7,47 +7,39 @@ import { Progress } from '@/components/ui/progress';
 import { Code2, FolderRoot, Award, TrendingUp, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 
 const StudentDashboard = () => {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [stats, setStats] = useState({
     skills: 0,
     projects: 0,
     certs: 0,
-    views: 142 // Mock views as we don't have a views table yet
+    views: 142
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isDemo);
 
   useEffect(() => {
-    if (user) {
+    if (user && !isDemo) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, isDemo]);
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch Profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single();
+      const [profileData, skills, projects, certs] = await Promise.all([
+        api.get('/users/me'),
+        api.get('/skills'),
+        api.get('/projects'),
+        api.get('/certifications')
+      ]);
       
       setProfile(profileData);
-
-      // Fetch Counts
-      const [skillsRes, projectsRes, certsRes] = await Promise.all([
-        supabase.from('skills').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
-        supabase.from('projects').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
-        supabase.from('certifications').select('*', { count: 'exact', head: true }).eq('user_id', user?.id)
-      ]);
-
       setStats({
-        skills: skillsRes.count || 0,
-        projects: projectsRes.count || 0,
-        certs: certsRes.count || 0,
+        skills: skills?.length || 0,
+        projects: projects?.length || 0,
+        certs: certs?.length || 0,
         views: 142
       });
     } catch (error) {
@@ -79,7 +71,7 @@ const StudentDashboard = () => {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">
-            Welcome back, {profile?.first_name || 'User'}!
+            Welcome back, {profile?.firstName || 'User'}!
           </h1>
           <p className="text-slate-500">Here's what's happening with your portfolio.</p>
         </div>
@@ -147,16 +139,7 @@ const StudentDashboard = () => {
                   <div className="w-1 bg-blue-100 rounded-full" />
                   <div>
                     <p className="text-sm font-medium text-slate-900">Profile last updated</p>
-                    <p className="text-xs text-slate-500">
-                      {profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'Just now'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-1 bg-blue-100 rounded-full" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Account created</p>
-                    <p className="text-xs text-slate-500">Welcome to SkillPort!</p>
+                    <p className="text-xs text-slate-500">Just now</p>
                   </div>
                 </div>
               </div>
