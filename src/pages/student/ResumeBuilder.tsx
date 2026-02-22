@@ -9,13 +9,13 @@ import { Download, Eye, Layout, Settings2, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 
 const ResumeBuilder = () => {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isDemo);
   const [data, setData] = useState<any>({
     profile: null,
     skills: [],
@@ -24,23 +24,23 @@ const ResumeBuilder = () => {
   });
 
   useEffect(() => {
-    if (user) fetchResumeData();
-  }, [user]);
+    if (user && !isDemo) fetchResumeData();
+  }, [user, isDemo]);
 
   const fetchResumeData = async () => {
     try {
-      const [profileRes, skillsRes, projectsRes, certsRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user?.id).single(),
-        supabase.from('skills').select('*').eq('user_id', user?.id),
-        supabase.from('projects').select('*').eq('user_id', user?.id),
-        supabase.from('certifications').select('*').eq('user_id', user?.id)
+      const [profile, skills, projects, certs] = await Promise.all([
+        api.get('/users/me'),
+        api.get('/skills'),
+        api.get('/projects'),
+        api.get('/certifications')
       ]);
 
       setData({
-        profile: profileRes.data,
-        skills: skillsRes.data || [],
-        projects: projectsRes.data || [],
-        certs: certsRes.data || []
+        profile,
+        skills: skills || [],
+        projects: projects || [],
+        certs: certs || []
       });
     } catch (error) {
       console.error("Error fetching resume data:", error);
@@ -159,7 +159,7 @@ const ResumeBuilder = () => {
                 <div className="flex justify-between items-start border-b pb-8">
                   <div>
                     <h2 className="text-4xl font-bold text-slate-900">
-                      {profile?.first_name} {profile?.last_name}
+                      {profile?.firstName} {profile?.lastName}
                     </h2>
                     <p className="text-xl text-blue-600 font-medium mt-1">Student Portfolio</p>
                     <div className="flex gap-4 mt-4 text-sm text-slate-500">
@@ -169,7 +169,7 @@ const ResumeBuilder = () => {
                     </div>
                   </div>
                   <div className="w-24 h-24 bg-slate-100 rounded-xl overflow-hidden">
-                    {profile?.avatar_url && <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />}
+                    {profile?.avatarUrl && <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />}
                   </div>
                 </div>
 
