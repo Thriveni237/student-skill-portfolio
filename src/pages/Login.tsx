@@ -30,23 +30,21 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Using the centralized api utility which points to port 8080
       const user = await api.post("/users/login", {
         email,
         password,
       });
 
+      // Spring Boot returns null (empty body) for invalid credentials
       if (!user) {
         throw new Error("Invalid email or password");
       }
 
-      // Update global auth state
       login(user);
-
       showSuccess("Welcome back to SkillPort!");
       navigate(`/dashboard/${user.role}`);
     } catch (error: any) {
-      showError(error.message || "Login failed. Make sure your backend is running on port 8080.");
+      showError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -68,12 +66,8 @@ const Login = () => {
                 <GraduationCap className="text-white w-8 h-8" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">
-              Welcome back
-            </CardTitle>
-            <CardDescription>
-              Enter your credentials to access your account
-            </CardDescription>
+            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardDescription>Enter your credentials to access your account</CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
@@ -108,18 +102,13 @@ const Login = () => {
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
               >
-                {isLoading && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>
 
               <p className="text-sm text-center text-slate-600">
                 Don't have an account?{" "}
-                <Link
-                  to="/signup"
-                  className="text-blue-600 hover:underline font-medium"
-                >
+                <Link to="/signup" className="text-blue-600 hover:underline font-medium">
                   Sign up
                 </Link>
               </p>
