@@ -31,6 +31,7 @@ import ManageStudents from "./pages/admin/ManageStudents";
 import ManageRecruiters from "./pages/admin/ManageRecruiters";
 import InstitutionProfile from "./pages/admin/InstitutionProfile";
 import Reports from "./pages/admin/Reports";
+import DatabaseExplorer from "./pages/admin/DatabaseExplorer";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/dashboard/admin/recruiters" element={<ProtectedRoute allowedRoles={['admin']}><ManageRecruiters /></ProtectedRoute>} />
             <Route path="/dashboard/admin/profile" element={<ProtectedRoute allowedRoles={['admin']}><InstitutionProfile /></ProtectedRoute>} />
             <Route path="/dashboard/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><Reports /></ProtectedRoute>} />
+            <Route path="/dashboard/admin/database" element={<ProtectedRoute allowedRoles={['admin']}><DatabaseExplorer /></ProtectedRoute>} />
             
             {/* Shared Routes */}
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

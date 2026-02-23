@@ -22,7 +22,8 @@ import {
   Building2,
   FileDown,
   Calendar,
-  PieChart
+  PieChart,
+  Database
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -62,6 +63,7 @@ const adminNav: NavItem[] = [
   { label: 'Reports', href: '/dashboard/admin/reports', icon: PieChart },
   { label: 'Manage Students', href: '/dashboard/admin/students', icon: Users },
   { label: 'Manage Recruiters', href: '/dashboard/admin/recruiters', icon: Building2 },
+  { label: 'Database Explorer', href: '/dashboard/admin/database', icon: Database },
   { label: 'Institution Profile', href: '/dashboard/admin/profile', icon: GraduationCap },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
