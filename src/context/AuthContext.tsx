@@ -10,7 +10,7 @@ interface AuthContextType {
   isDemo: boolean;
   signOut: () => void;
   setDemoMode: (role: string) => void;
-  login: (credentials: any) => Promise<void>;
+  login: (user: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,25 +22,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('auth_token');
+    const checkAuth = () => {
+      const savedUser = localStorage.getItem('user');
       const demoRole = sessionStorage.getItem('demo_role');
 
       if (demoRole) {
         setDemoMode(demoRole);
-        setLoading(false);
-        return;
-      }
-
-      if (token) {
-        try {
-          // In a real app, you'd have a /me endpoint to verify the token
-          // const userData = await api.get('/auth/me');
-          // setUser(userData);
-          // setRole(userData.role);
-        } catch (err) {
-          localStorage.removeItem('auth_token');
-        }
+      } else if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+        setRole(userData.role);
+        setIsDemo(false);
       }
       setLoading(false);
     };
@@ -48,23 +40,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuth();
   }, []);
 
-  const login = async (credentials: any) => {
-    // This would call your local MySQL-backed API
-    // const { user, token } = await api.post('/auth/login', credentials);
-    // localStorage.setItem('auth_token', token);
-    // setUser(user);
-    // setRole(user.role);
+  const login = (userData: any) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    setRole(userData.role);
+    setIsDemo(false);
+    sessionStorage.removeItem('demo_role');
   };
 
   const setDemoMode = (demoRole: string) => {
     sessionStorage.setItem('demo_role', demoRole);
     setRole(demoRole);
     setIsDemo(true);
-    setUser({ id: 'demo', first_name: 'Demo', last_name: 'User', role: demoRole });
+    setUser({ id: 'demo', firstName: 'Demo', lastName: 'User', role: demoRole });
+    localStorage.removeItem('user');
   };
 
   const signOut = () => {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
     sessionStorage.removeItem('demo_role');
     setUser(null);
     setRole(null);

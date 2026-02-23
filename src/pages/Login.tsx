@@ -16,49 +16,37 @@ import {
 } from "@/components/ui/card";
 import { showError, showSuccess } from "@/utils/toast";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { setDemoMode } = useAuth();
+  const { setDemoMode, login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:8082/api/users/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
+      // Using the centralized api utility which points to port 8080
+      const user = await api.post("/users/login", {
+        email,
+        password,
+      });
 
-      const user = await response.json();
-
-      // backend returns null if login fails
       if (!user) {
         throw new Error("Invalid email or password");
       }
 
-      // store logged-in user
-      localStorage.setItem("user", JSON.stringify(user));
+      // Update global auth state
+      login(user);
 
       showSuccess("Welcome back to SkillPort!");
-
-      // redirect based on role
       navigate(`/dashboard/${user.role}`);
     } catch (error: any) {
-      showError(error.message || "Login failed");
+      showError(error.message || "Login failed. Make sure your backend is running on port 8080.");
     } finally {
       setIsLoading(false);
     }
@@ -139,28 +127,24 @@ const Login = () => {
           </form>
         </Card>
 
-        {/* Demo buttons */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-slate-50 px-2 text-blue-600 font-bold">Presentation Mode</span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-3 gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDemoLogin("student")}
-          >
-            <Play className="w-4 h-4" /> Student
+          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('student')} className="text-[10px] h-auto py-3 flex-col gap-2 border-blue-200 hover:bg-blue-50">
+            <Play className="w-4 h-4 text-blue-600" /> Student
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDemoLogin("recruiter")}
-          >
-            <Play className="w-4 h-4" /> Recruiter
+          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('recruiter')} className="text-[10px] h-auto py-3 flex-col gap-2 border-indigo-200 hover:bg-indigo-50">
+            <Play className="w-4 h-4 text-indigo-600" /> Recruiter
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDemoLogin("admin")}
-          >
-            <Play className="w-4 h-4" /> Admin
+          <Button variant="outline" size="sm" onClick={() => handleDemoLogin('admin')} className="text-[10px] h-auto py-3 flex-col gap-2 border-emerald-200 hover:bg-emerald-50">
+            <Play className="w-4 h-4 text-emerald-600" /> Admin
           </Button>
         </div>
       </div>
