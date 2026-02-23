@@ -32,13 +32,20 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
-      await api.post('/users/signup', {
-        email,
+      // Normalize email before sending
+      const normalizedEmail = email.toLowerCase().trim();
+      
+      const response = await api.post('/users/signup', {
+        email: normalizedEmail,
         password,
         firstName,
         lastName,
         role
       });
+
+      if (!response) {
+        throw new Error("Registration failed. Please try again.");
+      }
 
       showSuccess("Registration successful! You can now log in.");
       navigate('/login');

@@ -30,12 +30,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
+      // Normalize email before sending
+      const normalizedEmail = email.toLowerCase().trim();
+
       const user = await api.post("/users/login", {
-        email,
+        email: normalizedEmail,
         password,
       });
 
-      // Spring Boot returns null (empty body) for invalid credentials
       if (!user) {
         throw new Error("Invalid email or password");
       }
