@@ -11,16 +11,42 @@ import { Search, Filter, MapPin, ExternalLink, Bookmark, BookmarkCheck, Loader2 
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { showError } from '@/utils/toast';
+import { useAuth } from '@/context/AuthContext';
 
 const RecruiterDashboard = () => {
+  const { isDemo } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const mockStudents = [
+    {
+      id: 'demo-1',
+      firstName: 'Alex',
+      lastName: 'Johnson',
+      bio: 'Full Stack Developer specializing in React and Spring Boot.',
+      location: 'San Francisco, CA',
+      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100'
+    },
+    {
+      id: 'demo-2',
+      firstName: 'Sarah',
+      lastName: 'Chen',
+      bio: 'UI/UX Designer with a passion for accessible web design.',
+      location: 'New York, NY',
+      avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100'
+    }
+  ];
+
   useEffect(() => {
-    fetchStudents();
-  }, []);
+    if (isDemo) {
+      setStudents(mockStudents);
+      setLoading(false);
+    } else {
+      fetchStudents();
+    }
+  }, [isDemo]);
 
   const fetchStudents = async () => {
     try {
@@ -28,6 +54,8 @@ const RecruiterDashboard = () => {
       setStudents(data || []);
     } catch (error: any) {
       showError(error.message);
+      // Fallback to mock if API fails during demo/presentation
+      setStudents(mockStudents);
     } finally {
       setLoading(false);
     }
@@ -50,7 +78,9 @@ const RecruiterDashboard = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Talent Search</h1>
-            <p className="text-slate-500">Find real candidates registered on the platform.</p>
+            <p className="text-slate-500">
+              {isDemo ? "Viewing demo candidates (Demo Mode)" : "Find real candidates registered on the platform."}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative flex-1 md:w-80">
@@ -121,7 +151,7 @@ const RecruiterDashboard = () => {
               ))
             ) : (
               <div className="text-center py-20 bg-white rounded-2xl border border-dashed">
-                <p className="text-slate-500">No real candidates found matching your search.</p>
+                <p className="text-slate-500">No candidates found matching your search.</p>
               </div>
             )}
           </div>

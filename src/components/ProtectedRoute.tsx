@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { session, role, loading, isDemo } = useAuth();
+  const { user, role, loading, isDemo } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -22,8 +22,8 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     );
   }
 
-  // Allow access if there is a real session OR if we are in demo mode
-  if (!session && !isDemo) {
+  // Allow access if there is a real user OR if we are in demo mode
+  if (!user && !isDemo) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
