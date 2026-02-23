@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -18,16 +19,25 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> getAllUsers(@RequestParam(required = false) String role) {
+        List<User> users = userRepository.findAll();
+        if (role != null && !role.isEmpty()) {
+            return users.stream()
+                    .filter(u -> role.equalsIgnoreCase(u.getRole()))
+                    .collect(Collectors.toList());
+        }
+        return users;
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody User user) {
-        // Normalize email
-        if (user.getEmail() != null) {
-            user.setEmail(user.getEmail().toLowerCase().trim());
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"message\": \"Email is required\"}");
         }
+
+        // Normalize email
+        user.setEmail(user.getEmail().toLowerCase().trim());
         
         User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser != null) {
@@ -35,13 +45,23 @@ public class UserController {
                 .body("{\"message\": \"User already exists with this email\"}");
         }
         
-        User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(savedUser);
+        try {
+            User savedUser = userRepository.save(user);
+            return ResponseEntity.ok(savedUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("{\"message\": \"Error saving user: " + e.getMessage() + "\"}");
+        }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginUser) {
-        String email = loginUser.getEmail() != null ? loginUser.getEmail().toLowerCase().trim() : "";
+        if (loginUser.getEmail() == null || loginUser.getPassword() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"message\": \"Email and password are required\"}");
+        }
+
+        String email = loginUser.getEmail().toLowerCase().trim();
         User user = userRepository.findByEmail(email);
         
         if (user != null && user.getPassword().equals(loginUser.getPassword())) {

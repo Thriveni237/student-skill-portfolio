@@ -20,7 +20,8 @@ import {
   UserX, 
   Mail,
   Download,
-  Loader2
+  Loader2,
+  Database
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -41,9 +42,12 @@ const ManageStudents = () => {
   }, []);
 
   const fetchStudents = async () => {
+    setLoading(true);
     try {
-      const data = await api.get('/users?role=student');
-      setStudents(data || []);
+      // Fetch all users and filter on frontend to be safe
+      const data = await api.get('/users');
+      const studentList = Array.isArray(data) ? data.filter((u: any) => u.role === 'student') : [];
+      setStudents(studentList);
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -52,7 +56,8 @@ const ManageStudents = () => {
   };
 
   const filteredStudents = students.filter(s => 
-    `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+    `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleStatusToggle = (name: string) => {
@@ -67,9 +72,14 @@ const ManageStudents = () => {
             <h1 className="text-3xl font-bold text-slate-900">Manage Students</h1>
             <p className="text-slate-500">View and manage student accounts from your local database.</p>
           </div>
-          <Button variant="outline" className="gap-2">
-            <Download className="w-4 h-4" /> Export Data
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={fetchStudents} className="gap-2">
+              <Database className="w-4 h-4" /> Refresh Data
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <Download className="w-4 h-4" /> Export Data
+            </Button>
+          </div>
         </div>
 
         <Card className="border-none shadow-sm">
@@ -95,7 +105,7 @@ const ManageStudents = () => {
                   <TableHeader>
                     <TableRow className="bg-slate-50/50">
                       <TableHead>Student Name</TableHead>
-                      <TableHead>Role</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -108,7 +118,7 @@ const ManageStudents = () => {
                             <span className="font-medium text-slate-900">{student.firstName} {student.lastName}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="capitalize">{student.role}</TableCell>
+                        <TableCell>{student.email}</TableCell>
                         <TableCell>
                           <Badge variant="default" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                             Active
@@ -139,7 +149,7 @@ const ManageStudents = () => {
                     {filteredStudents.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8 text-slate-500">
-                          No students found in the database.
+                          No students found in the database. Try registering a new student account.
                         </TableCell>
                       </TableRow>
                     )}
