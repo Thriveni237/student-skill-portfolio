@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,43 +8,84 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, MoreVertical, Users, Eye, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, MoreVertical, Users, Eye, Edit2, Trash2, X, Loader2 } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { showSuccess } from '@/utils/toast';
+import { showSuccess, showError } from '@/utils/toast';
+import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 const RecruiterJobs = () => {
+  const { user, isDemo } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
-  const [jobs, setJobs] = useState([
-    { id: '1', title: 'Frontend Developer Intern', applicants: 24, views: 142, status: 'Active', date: 'Oct 12, 2023' },
-    { id: '2', title: 'Junior Full Stack Engineer', applicants: 12, views: 89, status: 'Active', date: 'Oct 15, 2023' },
-  ]);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [posting, setPosting] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     location: '',
-    type: 'Full-time'
+    type: 'Full-time',
+    salary: '',
+    tags: '',
+    company: 'TechFlow Solutions' // Default for now
   });
 
-  const handlePostJob = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchMyJobs();
+  }, []);
+
+  const fetchMyJobs = async () => {
+    try {
+      const data = await api.get(isDemo ? '/jobs' : `/jobs/recruiter/${user.id}`);
+      setJobs(Array.isArray(data) ? data : []);
+    } catch (error: any) {
+      if (!isDemo) showError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newJob = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: formData.title,
-      applicants: 0,
-      views: 0,
-      status: 'Active',
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    setPosting(true);
+    
+    const jobData = {
+      ...formData,
+      recruiterId: user.id
     };
-    setJobs([newJob, ...jobs]);
-    setIsAdding(false);
-    setFormData({ title: '', description: '', location: '', type: 'Full-time' });
-    showSuccess("Job posted successfully!");
+
+    try {
+      if (isDemo) {
+        setJobs([{ ...jobData, id: Math.random().toString() }, ...jobs]);
+        showSuccess("Job posted (Demo Mode)");
+      } else {
+        const newJob = await api.post('/jobs', jobData);
+        setJobs([newJob, ...jobs]);
+        showSuccess("Job posted successfully!");
+      }
+      setIsAdding(false);
+      setFormData({ title: '', description: '', location: '', type: 'Full-time', salary: '', tags: '', company: 'TechFlow Solutions' });
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      if (!isDemo) await api.delete(`/jobs/${id}`);
+      setJobs(jobs.filter(j => j.id !== id));
+      showSuccess("Job posting removed");
+    } catch (error: any) {
+      showError(error.message);
+    }
   };
 
   return (
@@ -91,6 +132,26 @@ const RecruiterJobs = () => {
                     />
                   </div>
                 </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="salary">Salary Range</Label>
+                    <Input 
+                      id="salary" 
+                      placeholder="e.g. $80k - $110k"
+                      value={formData.salary}
+                      onChange={e => setFormData({...formData, salary: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tags">Tags (comma separated)</Label>
+                    <Input 
+                      id="tags" 
+                      placeholder="React, Node.js, SQL"
+                      value={formData.tags}
+                      onChange={e => setFormData({...formData, tags: e.target.value})}
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Job Description</Label>
                   <Textarea 
@@ -101,61 +162,75 @@ const RecruiterJobs = () => {
                     onChange={e => setFormData({...formData, description: e.target.value})}
                   />
                 </div>
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Publish Job Posting</Button>
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={posting}>
+                  {posting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Publish Job Posting
+                </Button>
               </form>
             </CardContent>
           </Card>
         )}
 
-        <div className="grid gap-4">
-          {jobs.map((job) => (
-            <Card key={job.id} className="border-none shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
-                    <p className="text-sm text-slate-500">Posted on {job.date} • <span className="text-emerald-600 font-medium">{job.status}</span></p>
-                  </div>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {jobs.map((job) => (
+              <Card key={job.id} className="border-none shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
+                      <p className="text-sm text-slate-500">Posted on {new Date(job.createdAt).toLocaleDateString()} • <span className="text-emerald-600 font-medium">Active</span></p>
+                    </div>
 
-                  <div className="flex items-center gap-8">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-slate-900">{job.applicants}</p>
-                      <p className="text-xs text-slate-500 flex items-center gap-1 justify-center">
-                        <Users className="w-3 h-3" /> Applicants
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-slate-900">{job.views}</p>
-                      <p className="text-xs text-slate-500 flex items-center gap-1 justify-center">
-                        <Eye className="w-3 h-3" /> Views
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Link to={`/dashboard/recruiter/jobs/${job.id}/applicants`}>
-                        <Button variant="outline" size="sm">View Applicants</Button>
-                      </Link>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="gap-2">
-                            <Edit2 className="w-4 h-4" /> Edit Posting
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 text-red-600">
-                            <Trash2 className="w-4 h-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <div className="flex items-center gap-8">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-slate-900">0</p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1 justify-center">
+                          <Users className="w-3 h-3" /> Applicants
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-slate-900">0</p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1 justify-center">
+                          <Eye className="w-3 h-3" /> Views
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link to={`/dashboard/recruiter/jobs/${job.id}/applicants`}>
+                          <Button variant="outline" size="sm">View Applicants</Button>
+                        </Link>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem className="gap-2">
+                              <Edit2 className="w-4 h-4" /> Edit Posting
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2 text-red-600" onClick={() => handleDelete(job.id)}>
+                              <Trash2 className="w-4 h-4" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+            {jobs.length === 0 && (
+              <div className="text-center py-20 bg-white rounded-2xl border border-dashed">
+                <p className="text-slate-500">You haven't posted any jobs yet.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
