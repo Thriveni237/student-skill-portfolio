@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Eye, Layout, Settings2, Check, Loader2 } from 'lucide-react';
+import { Download, Eye, Layout, Settings2, Check, Loader2, User, Mail, MapPin, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
 import { useAuth } from '@/context/AuthContext';
@@ -16,6 +16,14 @@ const ResumeBuilder = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [isGenerating, setIsGenerating] = useState(false);
   const [loading, setLoading] = useState(!isDemo);
+  const [sections, setSections] = useState({
+    bio: true,
+    skills: true,
+    projects: true,
+    certs: true,
+    contact: true
+  });
+
   const [data, setData] = useState<any>({
     profile: null,
     skills: [],
@@ -25,19 +33,28 @@ const ResumeBuilder = () => {
 
   useEffect(() => {
     if (user && !isDemo) fetchResumeData();
+    else if (isDemo) {
+      setData({
+        profile: { firstName: 'Alex', lastName: 'Johnson', bio: 'Full Stack Developer', location: 'San Francisco, CA' },
+        skills: [{ name: 'React', level: 'Expert' }, { name: 'Node.js', level: 'Intermediate' }],
+        projects: [{ title: 'E-Commerce App', description: 'A full stack shop', tags: 'React, Node' }],
+        certs: [{ name: 'AWS Solutions Architect', issuer: 'Amazon', date: '2023-10-15' }]
+      });
+      setLoading(false);
+    }
   }, [user, isDemo]);
 
   const fetchResumeData = async () => {
     try {
       const [profile, skills, projects, certs] = await Promise.all([
-        api.get('/users/me'),
+        api.get(`/users/${user.id}`),
         api.get('/skills'),
         api.get('/projects'),
         api.get('/certifications')
       ]);
 
       setData({
-        profile,
+        profile: profile || user,
         skills: skills || [],
         projects: projects || [],
         certs: certs || []
@@ -133,18 +150,17 @@ const ResumeBuilder = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sections to Include</p>
-                  {[
-                    { label: 'Professional Bio', checked: true },
-                    { label: 'Technical Skills', checked: true },
-                    { label: 'Featured Projects', checked: true },
-                    { label: 'Certifications', checked: true },
-                    { label: 'Contact Info', checked: true },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">{item.label}</span>
-                      <div className="w-10 h-5 bg-blue-600 rounded-full relative">
-                        <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full" />
-                      </div>
+                  {Object.entries(sections).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600 capitalize">{key === 'certs' ? 'Certifications' : key}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setSections(prev => ({ ...prev, [key]: !value }))}
+                        className={cn("h-8 w-8 p-0 rounded-full", value ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400")}
+                      >
+                        <Check className="w-4 h-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -153,70 +169,101 @@ const ResumeBuilder = () => {
           </div>
 
           <div className="lg:col-span-2">
-            <Card className="border-none shadow-xl min-h-[800px] bg-white overflow-hidden">
-              <div className="p-12 space-y-8">
-                {/* Real Resume Preview */}
+            <Card className={cn(
+              "border-none shadow-xl min-h-[800px] bg-white overflow-hidden transition-all duration-500",
+              selectedTemplate === 'minimal' && "font-serif",
+              selectedTemplate === 'creative' && "bg-slate-50"
+            )}>
+              <div className={cn(
+                "p-12 space-y-8",
+                selectedTemplate === 'modern' && "border-t-8 border-blue-600",
+                selectedTemplate === 'minimal' && "border-l-8 border-slate-900",
+                selectedTemplate === 'creative' && "border-t-8 border-indigo-600"
+              )}>
+                {/* Header */}
                 <div className="flex justify-between items-start border-b pb-8">
-                  <div>
+                  <div className="space-y-2">
                     <h2 className="text-4xl font-bold text-slate-900">
                       {profile?.firstName} {profile?.lastName}
                     </h2>
-                    <p className="text-xl text-blue-600 font-medium mt-1">Student Portfolio</p>
-                    <div className="flex gap-4 mt-4 text-sm text-slate-500">
-                      <span>{user?.email}</span>
-                      <span>•</span>
-                      <span>{profile?.location || 'Location not set'}</span>
-                    </div>
+                    <p className="text-xl text-blue-600 font-medium">Student Portfolio</p>
+                    {sections.contact && (
+                      <div className="flex flex-wrap gap-4 mt-4 text-sm text-slate-500">
+                        <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {user?.email}</span>
+                        <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {profile?.location || 'Location not set'}</span>
+                        {profile?.website && <span className="flex items-center gap-1"><Globe className="w-3.5 h-3.5" /> {profile.website}</span>}
+                      </div>
+                    )}
                   </div>
-                  <div className="w-24 h-24 bg-slate-100 rounded-xl overflow-hidden">
-                    {profile?.avatarUrl && <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />}
+                  <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-slate-50">
+                    <User className="w-12 h-12 text-slate-300" />
                   </div>
                 </div>
 
-                <section className="space-y-3">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Professional Summary</h3>
-                  <p className="text-slate-600 leading-relaxed">
-                    {profile?.bio || "No bio added yet."}
-                  </p>
-                </section>
+                {/* Bio */}
+                {sections.bio && (
+                  <section className="space-y-3">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Professional Summary</h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      {profile?.bio || "Passionate student dedicated to technical excellence and continuous learning."}
+                    </p>
+                  </section>
+                )}
 
-                <section className="space-y-3">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Technical Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.length > 0 ? skills.map((skill: any) => (
-                      <Badge key={skill.id} variant="outline" className="rounded-md border-slate-200 text-slate-700">
-                        {skill.name} ({skill.level})
-                      </Badge>
-                    )) : <p className="text-sm text-slate-500">No skills added yet.</p>}
-                  </div>
-                </section>
+                {/* Skills */}
+                {sections.skills && (
+                  <section className="space-y-3">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Technical Skills</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {skills.length > 0 ? skills.map((skill: any) => (
+                        <Badge key={skill.id} variant="outline" className="rounded-md border-slate-200 text-slate-700 bg-slate-50/50">
+                          {skill.name} • {skill.level}
+                        </Badge>
+                      )) : <p className="text-sm text-slate-400 italic">No skills added yet.</p>}
+                    </div>
+                  </section>
+                )}
 
-                <section className="space-y-4">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Featured Projects</h3>
-                  <div className="space-y-4">
-                    {projects.length > 0 ? projects.map((project: any) => (
-                      <div key={project.id}>
-                        <h4 className="font-bold text-slate-900">{project.title}</h4>
-                        <p className="text-sm text-slate-600 mt-1">{project.description}</p>
-                        <p className="text-xs text-blue-600 mt-1">{project.tags}</p>
-                      </div>
-                    )) : <p className="text-sm text-slate-500">No projects added yet.</p>}
-                  </div>
-                </section>
+                {/* Projects */}
+                {sections.projects && (
+                  <section className="space-y-6">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Featured Projects</h3>
+                    <div className="space-y-6">
+                      {projects.length > 0 ? projects.map((project: any) => (
+                        <div key={project.id} className="space-y-1">
+                          <div className="flex justify-between items-baseline">
+                            <h4 className="font-bold text-slate-900 text-lg">{project.title}</h4>
+                            <span className="text-xs text-slate-400 font-mono">{project.github ? 'GitHub Verified' : ''}</span>
+                          </div>
+                          <p className="text-sm text-slate-600 leading-relaxed">{project.description}</p>
+                          <p className="text-xs text-blue-600 font-medium">{project.tags}</p>
+                        </div>
+                      )) : <p className="text-sm text-slate-400 italic">No projects added yet.</p>}
+                    </div>
+                  </section>
+                )}
 
-                <section className="space-y-3">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Certifications</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {certs.length > 0 ? certs.map((cert: any) => (
-                      <div key={cert.id}>
-                        <p className="font-bold text-sm text-slate-900">{cert.name}</p>
-                        <p className="text-xs text-slate-500">{cert.issuer} • {cert.date}</p>
-                      </div>
-                    )) : <p className="text-sm text-slate-500">No certifications added yet.</p>}
-                  </div>
-                </section>
+                {/* Certifications */}
+                {sections.certs && (
+                  <section className="space-y-4">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b pb-1">Certifications</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {certs.length > 0 ? certs.map((cert: any) => (
+                        <div key={cert.id} className="flex items-start gap-3">
+                          <div className="p-2 bg-slate-50 rounded-lg">
+                            <Check className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-slate-900">{cert.name}</p>
+                            <p className="text-xs text-slate-500">{cert.issuer} • {new Date(cert.date).getFullYear()}</p>
+                          </div>
+                        </div>
+                      )) : <p className="text-sm text-slate-400 italic">No certifications added yet.</p>}
+                    </div>
+                  </section>
+                )}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
