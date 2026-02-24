@@ -111,8 +111,8 @@ const Profile = () => {
         api.get('/projects')
       ]);
       setPortfolioData({
-        skills: skills || [],
-        projects: projects || []
+        skills: Array.isArray(skills) ? skills : [],
+        projects: Array.isArray(projects) ? projects : []
       });
     } catch (e) {
       console.error("Failed to fetch portfolio extras");
@@ -354,7 +354,7 @@ const Profile = () => {
                     <Code2 className="w-6 h-6 text-blue-600" /> Technical Expertise
                   </h3>
                   <div className="flex flex-wrap gap-3">
-                    {portfolioData.skills.length > 0 ? portfolioData.skills.map((skill, i) => (
+                    {portfolioData.skills && portfolioData.skills.length > 0 ? portfolioData.skills.map((skill, i) => (
                       <div key={i} className="px-4 py-2 bg-white border border-slate-100 shadow-sm rounded-2xl flex items-center gap-3 hover:border-blue-200 transition-colors">
                         <span className="font-bold text-slate-900">{skill.name}</span>
                         <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-none font-normal">
@@ -373,13 +373,13 @@ const Profile = () => {
                     <Briefcase className="w-6 h-6 text-blue-600" /> Featured Projects
                   </h3>
                   <div className="space-y-4">
-                    {portfolioData.projects.length > 0 ? portfolioData.projects.map((project, i) => (
+                    {portfolioData.projects && portfolioData.projects.length > 0 ? portfolioData.projects.map((project, i) => (
                       <Card key={i} className="border-none shadow-md hover:shadow-lg transition-all overflow-hidden group">
                         <CardContent className="p-5 space-y-3">
                           <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{project.title}</h4>
                           <p className="text-sm text-slate-500 line-clamp-2">{project.description}</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {project.tags?.split(',').map((tag: string) => (
+                            {(project.tags?.split(',') || []).map((tag: string) => (
                               <span key={tag} className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{tag.trim()}</span>
                             ))}
                           </div>
