@@ -8,13 +8,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Github, Linkedin, Globe, MapPin, User, Save, Loader2 } from 'lucide-react';
+import { 
+  Github, 
+  Linkedin, 
+  Globe, 
+  MapPin, 
+  User, 
+  Edit3, 
+  Share2, 
+  ExternalLink, 
+  CheckCircle2, 
+  Loader2,
+  ArrowLeft,
+  Mail,
+  ShieldCheck
+} from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const { user, isDemo, login } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fetching, setFetching] = useState(!isDemo);
   const [profile, setProfile] = useState({
@@ -34,11 +50,11 @@ const Profile = () => {
       setProfile({
         firstName: user.firstName || 'Demo',
         lastName: user.lastName || 'User',
-        bio: 'This is a demo bio. In a real account, you can save your professional summary here.',
+        bio: 'Passionate software engineering student with a focus on full-stack development. I love building scalable applications and learning new technologies.',
         location: 'San Francisco, CA',
-        github: 'github.com/demo',
-        linkedin: 'linkedin.com/in/demo',
-        website: 'demo.com'
+        github: 'github.com/demouser',
+        linkedin: 'linkedin.com/in/demouser',
+        website: 'demouser.dev'
       });
     }
   }, [user, isDemo]);
@@ -68,20 +84,27 @@ const Profile = () => {
     e.preventDefault();
     if (isDemo) {
       showSuccess("Profile updated (Demo Mode)");
+      setIsEditing(false);
       return;
     }
 
     setIsLoading(true);
     try {
       const updatedUser = await api.put(`/users/${user.id}`, profile);
-      // Update local auth context so other pages reflect changes
       login(updatedUser);
       showSuccess("Profile saved successfully!");
+      setIsEditing(false);
     } catch (error: any) {
       showError(error.message || "Failed to save profile");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleShare = () => {
+    const url = window.location.origin + "/portfolio/preview";
+    navigator.clipboard.writeText(url);
+    showSuccess("Portfolio link copied to clipboard!");
   };
 
   if (fetching) {
@@ -98,53 +121,53 @@ const Profile = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Header with Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">My Profile</h1>
-            <p className="text-slate-500">Manage your public presence and personal information.</p>
+            <h1 className="text-3xl font-bold text-slate-900">
+              {isEditing ? "Edit Profile" : "My Professional Profile"}
+            </h1>
+            <p className="text-slate-500">
+              {isEditing ? "Update your information below." : "This is how your professional identity appears."}
+            </p>
           </div>
-          <Button 
-            onClick={handleSave} 
-            className="bg-blue-600 hover:bg-blue-700 gap-2"
-            disabled={isLoading}
-          >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Save Changes
-          </Button>
+          <div className="flex items-center gap-3">
+            {!isEditing ? (
+              <>
+                <Button variant="outline" onClick={handleShare} className="gap-2">
+                  <Share2 className="w-4 h-4" /> Share
+                </Button>
+                <Link to="/portfolio/preview">
+                  <Button variant="outline" className="gap-2">
+                    <ExternalLink className="w-4 h-4" /> Preview
+                  </Button>
+                </Link>
+                <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700 gap-2">
+                  <Edit3 className="w-4 h-4" /> Edit Profile
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => setIsEditing(false)} className="gap-2">
+                  <ArrowLeft className="w-4 h-4" /> Cancel
+                </Button>
+                <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 gap-2" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  Save Changes
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="grid gap-8">
-          {/* Header Card */}
-          <Card className="border-none shadow-sm overflow-hidden">
-            <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600" />
-            <CardContent className="relative pt-0 pb-8">
-              <div className="flex flex-col md:flex-row items-end gap-6 -mt-12 px-6">
-                <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                  <AvatarFallback className="text-3xl bg-blue-100 text-blue-600 font-bold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 pb-2">
-                  <h2 className="text-2xl font-bold text-slate-900">
-                    {profile.firstName} {profile.lastName}
-                  </h2>
-                  <p className="text-slate-500 flex items-center gap-1">
-                    <MapPin className="w-4 h-4" /> {profile.location || 'Location not set'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <form onSubmit={handleSave} className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 space-y-8">
-              {/* Personal Info */}
+        {isEditing ? (
+          /* EDIT MODE */
+          <form onSubmit={handleSave} className="grid md:grid-cols-3 gap-8 animate-in fade-in duration-300">
+            <div className="md:col-span-2 space-y-6">
               <Card className="border-none shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <User className="w-5 h-5 text-blue-600" /> Personal Information
-                  </CardTitle>
+                  <CardTitle className="text-lg">Basic Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -181,16 +204,14 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Bio */}
               <Card className="border-none shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Professional Bio</CardTitle>
-                  <CardDescription>Write a short summary about yourself for recruiters.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Textarea 
                     rows={6}
-                    placeholder="Tell us about your background, interests, and career goals..."
+                    placeholder="Tell us about your background..."
                     value={profile.bio} 
                     onChange={e => setProfile({...profile, bio: e.target.value})} 
                   />
@@ -198,41 +219,31 @@ const Profile = () => {
               </Card>
             </div>
 
-            {/* Social Links */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               <Card className="border-none shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Social Links</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="github" className="flex items-center gap-2">
-                      <Github className="w-4 h-4" /> GitHub
-                    </Label>
+                    <Label className="flex items-center gap-2"><Github className="w-4 h-4" /> GitHub</Label>
                     <Input 
-                      id="github" 
                       placeholder="github.com/username"
                       value={profile.github} 
                       onChange={e => setProfile({...profile, github: e.target.value})} 
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="linkedin" className="flex items-center gap-2">
-                      <Linkedin className="w-4 h-4" /> LinkedIn
-                    </Label>
+                    <Label className="flex items-center gap-2"><Linkedin className="w-4 h-4" /> LinkedIn</Label>
                     <Input 
-                      id="linkedin" 
                       placeholder="linkedin.com/in/username"
                       value={profile.linkedin} 
                       onChange={e => setProfile({...profile, linkedin: e.target.value})} 
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="website" className="flex items-center gap-2">
-                      <Globe className="w-4 h-4" /> Portfolio Website
-                    </Label>
+                    <Label className="flex items-center gap-2"><Globe className="w-4 h-4" /> Website</Label>
                     <Input 
-                      id="website" 
                       placeholder="yourwebsite.com"
                       value={profile.website} 
                       onChange={e => setProfile({...profile, website: e.target.value})} 
@@ -240,21 +251,114 @@ const Profile = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </form>
+        ) : (
+          /* VIEW MODE */
+          <div className="grid md:grid-cols-3 gap-8 animate-in fade-in duration-300">
+            <div className="md:col-span-2 space-y-8">
+              {/* Profile Hero */}
+              <Card className="border-none shadow-sm overflow-hidden">
+                <div className="h-40 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600" />
+                <CardContent className="relative pt-0 pb-8 px-8">
+                  <div className="flex flex-col md:flex-row items-end gap-6 -mt-16">
+                    <Avatar className="w-32 h-32 border-4 border-white shadow-xl">
+                      <AvatarFallback className="text-3xl bg-blue-100 text-blue-600 font-bold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 pb-2">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-3xl font-bold text-slate-900">
+                          {profile.firstName} {profile.lastName}
+                        </h2>
+                        <ShieldCheck className="w-6 h-6 text-blue-500" />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 mt-2 text-slate-500">
+                        <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {profile.location || 'Location not set'}</span>
+                        <span className="flex items-center gap-1.5"><Mail className="w-4 h-4" /> {user?.email}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <Card className="border-none shadow-sm bg-blue-50 border-blue-100">
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-blue-900 mb-2">Profile Visibility</h3>
-                  <p className="text-sm text-blue-700 mb-4">
-                    Your profile is currently visible to verified recruiters from your institution.
+              {/* Bio Section */}
+              <Card className="border-none shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-xl">About Me</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-600 leading-relaxed text-lg">
+                    {profile.bio || "No bio added yet. Click 'Edit Profile' to tell recruiters about yourself."}
                   </p>
-                  <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-100">
-                    View Public Profile
-                  </Button>
                 </CardContent>
               </Card>
             </div>
-          </form>
-        </div>
+
+            {/* Sidebar Info */}
+            <div className="space-y-6">
+              {/* Social Links Card */}
+              <Card className="border-none shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Connect</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {profile.github && (
+                    <a href={`https://${profile.github}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group">
+                      <Github className="w-5 h-5 text-slate-700" />
+                      <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900">GitHub</span>
+                      <ExternalLink className="w-3 h-3 ml-auto text-slate-400" />
+                    </a>
+                  )}
+                  {profile.linkedin && (
+                    <a href={`https://${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors group">
+                      <Linkedin className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-700 group-hover:text-blue-900">LinkedIn</span>
+                      <ExternalLink className="w-3 h-3 ml-auto text-blue-400" />
+                    </a>
+                  )}
+                  {profile.website && (
+                    <a href={`https://${profile.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors group">
+                      <Globe className="w-5 h-5 text-indigo-600" />
+                      <span className="text-sm font-medium text-indigo-700 group-hover:text-indigo-900">Portfolio</span>
+                      <ExternalLink className="w-3 h-3 ml-auto text-indigo-400" />
+                    </a>
+                  )}
+                  {!profile.github && !profile.linkedin && !profile.website && (
+                    <p className="text-sm text-slate-500 italic text-center py-4">No social links added yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Profile Status */}
+              <Card className="border-none shadow-sm bg-slate-900 text-white">
+                <CardContent className="p-6">
+                  <h3 className="font-bold text-lg mb-4">Profile Status</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-400">Visibility</span>
+                      <span className="text-emerald-400 font-medium">Public</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-400">Verification</span>
+                      <span className="text-blue-400 font-medium">Verified Student</span>
+                    </div>
+                    <div className="pt-2">
+                      <div className="flex justify-between text-xs mb-1.5">
+                        <span className="text-slate-400">Profile Strength</span>
+                        <span className="text-white">85%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-blue-500 h-full w-[85%]" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
