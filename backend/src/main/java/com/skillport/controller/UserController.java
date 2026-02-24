@@ -85,4 +85,20 @@ public class UserController {
     public User getUserById(@PathVariable Long id) {
         return userRepository.findById(id).orElse(null);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+        return userRepository.findById(id).map(user -> {
+            user.setFirstName(updatedUser.getFirstName());
+            user.setLastName(updatedUser.getLastName());
+            user.setBio(updatedUser.getBio());
+            user.setLocation(updatedUser.getLocation());
+            user.setGithub(updatedUser.getGithub());
+            user.setLinkedin(updatedUser.getLinkedin());
+            user.setWebsite(updatedUser.getWebsite());
+            
+            User saved = userRepository.save(user);
+            return ResponseEntity.ok(saved);
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

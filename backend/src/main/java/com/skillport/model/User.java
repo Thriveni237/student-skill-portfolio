@@ -21,6 +21,11 @@ public class User {
     private String role; // student, recruiter, admin
     private String bio;
     private String location;
+    
+    // Social Links
+    private String github;
+    private String linkedin;
+    private String website;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Project> projects;
@@ -28,10 +33,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Skill> skills;
 
-    // 🔹 No-args constructor
     public User() {}
 
-    // 🔹 Getters and Setters
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -55,4 +59,13 @@ public class User {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public String getGithub() { return github; }
+    public void setGithub(String github) { this.github = github; }
+
+    public String getLinkedin() { return linkedin; }
+    public void setLinkedin(String linkedin) { this.linkedin = linkedin; }
+
+    public String getWebsite() { return website; }
+    public void setWebsite(String website) { this.website = website; }
 }
