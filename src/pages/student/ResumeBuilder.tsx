@@ -32,8 +32,9 @@ const ResumeBuilder = () => {
   });
 
   useEffect(() => {
-    if (user && !isDemo) fetchResumeData();
-    else if (isDemo) {
+    if (user && !isDemo) {
+      fetchResumeData();
+    } else if (isDemo) {
       setData({
         profile: { firstName: 'Alex', lastName: 'Johnson', bio: 'Full Stack Developer', location: 'San Francisco, CA' },
         skills: [{ name: 'React', level: 'Expert' }, { name: 'Node.js', level: 'Intermediate' }],
@@ -263,7 +264,7 @@ const ResumeBuilder = () => {
                   </section>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </div>
