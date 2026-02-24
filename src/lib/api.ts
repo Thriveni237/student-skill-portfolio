@@ -1,63 +1,79 @@
 "use client";
 
-import { supabase } from "@/integrations/supabase/client";
+const BASE_URL = 'http://localhost:8082/api';
 
-// This utility now wraps Supabase calls to maintain compatibility with existing code
 export const api = {
   get: async (endpoint: string) => {
-    const table = endpoint.replace(/^\//, '').split('/')[0];
-    const { data, error } = await supabase
-      .from(table)
-      .select('*');
-    
-    if (error) throw error;
-    return data;
+    try {
+      const response = await fetch(`${BASE_URL}${endpoint}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Backend error: ${response.status}`);
+      }
+      return response.json();
+    } catch (error: any) {
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
+      }
+      throw error;
+    }
   },
 
   post: async (endpoint: string, body: any) => {
-    const table = endpoint.replace(/^\//, '').split('/')[0];
-    
-    // Get current user for the user_id field
-    const { data: { user } } = await supabase.auth.getUser();
-    const dataToInsert = { ...body, user_id: user?.id };
-
-    const { data, error } = await supabase
-      .from(table)
-      .insert([dataToInsert])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+    try {
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Backend error: ${response.status}`);
+      }
+      return response.json();
+    } catch (error: any) {
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
+      }
+      throw error;
+    }
   },
 
   put: async (endpoint: string, body: any) => {
-    const parts = endpoint.replace(/^\//, '').split('/');
-    const table = parts[0];
-    const id = parts[1];
-
-    const { data, error } = await supabase
-      .from(table)
-      .update(body)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+    try {
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Backend error: ${response.status}`);
+      }
+      return response.json();
+    } catch (error: any) {
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
+      }
+      throw error;
+    }
   },
 
   delete: async (endpoint: string) => {
-    const parts = endpoint.replace(/^\//, '').split('/');
-    const table = parts[0];
-    const id = parts[1];
-
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
-    return true;
+    try {
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Backend error: ${response.status}`);
+      }
+      return true;
+    } catch (error: any) {
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
+      }
+      throw error;
+    }
   },
 };
