@@ -18,6 +18,16 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @GetMapping("/health")
+    public String healthCheck() {
+        try {
+            long count = userRepository.count();
+            return "Backend is running on port 8082 and connected to MySQL! Total users in DB: " + count;
+        } catch (Exception e) {
+            return "Backend is running, but CANNOT connect to MySQL. Error: " + e.getMessage();
+        }
+    }
+
     @GetMapping
     public List<User> getAllUsers(@RequestParam(required = false) String role) {
         List<User> users = userRepository.findAll();
@@ -36,7 +46,6 @@ public class UserController {
                 .body("{\"message\": \"Email is required\"}");
         }
 
-        // Normalize email
         user.setEmail(user.getEmail().toLowerCase().trim());
         
         User existingUser = userRepository.findByEmail(user.getEmail());
