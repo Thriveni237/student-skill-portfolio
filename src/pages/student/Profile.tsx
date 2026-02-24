@@ -42,14 +42,15 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [fetching, setFetching] = useState(!isDemo);
   
+  // Initialize state directly from the user object in AuthContext
   const [profile, setProfile] = useState({
-    firstName: '',
-    lastName: '',
-    bio: '',
-    location: '',
-    github: '',
-    linkedin: '',
-    website: ''
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    bio: user?.bio || '',
+    location: user?.location || '',
+    github: user?.github || '',
+    linkedin: user?.linkedin || '',
+    website: user?.website || ''
   });
 
   const [portfolioData, setPortfolioData] = useState({
@@ -80,8 +81,8 @@ const Profile = () => {
       const data = await api.get(`/users/${user.id}`);
       if (data) {
         setProfile({
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
+          firstName: data.firstName || user?.firstName || '',
+          lastName: data.lastName || user?.lastName || '',
           bio: data.bio || '',
           location: data.location || '',
           github: data.github || '',
@@ -90,7 +91,8 @@ const Profile = () => {
         });
       }
     } catch (error: any) {
-      showError(error.message || "Failed to load profile data");
+      // We don't show error here because we already have the basic names from AuthContext
+      console.error("Failed to load full profile data:", error.message);
     } finally {
       setFetching(false);
     }
@@ -138,7 +140,7 @@ const Profile = () => {
     showSuccess("Profile link copied to clipboard!");
   };
 
-  if (fetching) {
+  if (fetching && !profile.firstName) {
     return (
       <DashboardLayout role="student">
         <div className="flex justify-center py-20">
