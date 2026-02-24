@@ -114,7 +114,8 @@ public class UserController {
             
             User saved = userRepository.save(user);
             return ResponseEntity.ok(saved);
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body((User) null));
     }
 
     @DeleteMapping("/{id}")
