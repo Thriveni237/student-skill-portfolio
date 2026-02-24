@@ -16,7 +16,6 @@ import {
   User, 
   Edit3, 
   Share2, 
-  ExternalLink, 
   CheckCircle2, 
   Loader2,
   ArrowLeft,
@@ -26,7 +25,6 @@ import {
 import { showSuccess, showError } from '@/utils/toast';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const { user, isDemo, login } = useAuth();
@@ -102,9 +100,9 @@ const Profile = () => {
   };
 
   const handleShare = () => {
-    const url = window.location.origin + "/portfolio/preview";
+    const url = window.location.origin + "/dashboard/student/profile";
     navigator.clipboard.writeText(url);
-    showSuccess("Portfolio link copied to clipboard!");
+    showSuccess("Profile link copied to clipboard!");
   };
 
   if (fetching) {
@@ -138,11 +136,6 @@ const Profile = () => {
                 <Button variant="outline" onClick={handleShare} className="gap-2">
                   <Share2 className="w-4 h-4" /> Share
                 </Button>
-                <Link to="/portfolio/preview">
-                  <Button variant="outline" className="gap-2">
-                    <ExternalLink className="w-4 h-4" /> Preview
-                  </Button>
-                </Link>
                 <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700 gap-2">
                   <Edit3 className="w-4 h-4" /> Edit Profile
                 </Button>

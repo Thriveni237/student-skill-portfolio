@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Mail, ExternalLink, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Mail, CheckCircle2, XCircle } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 const Applicants = () => {
@@ -76,11 +76,6 @@ const Applicants = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Link to="/portfolio/preview">
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <ExternalLink className="w-4 h-4" /> Portfolio
-                      </Button>
-                    </Link>
                     <Button variant="outline" size="sm" className="gap-2" onClick={() => handleAction(applicant.name, "Shortlisted")}>
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Shortlist
                     </Button>

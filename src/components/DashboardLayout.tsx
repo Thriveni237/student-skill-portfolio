@@ -9,7 +9,6 @@ import {
   Code2, 
   FolderRoot, 
   Award, 
-  Eye, 
   LogOut,
   Search,
   BarChart3,
@@ -46,7 +45,6 @@ const studentNav: NavItem[] = [
   { label: 'Jobs', href: '/dashboard/student/jobs', icon: Briefcase },
   { label: 'My Applications', href: '/dashboard/student/applications', icon: FileText },
   { label: 'Settings', href: '/settings', icon: Settings },
-  { label: 'Preview Portfolio', href: '/portfolio/preview', icon: Eye },
 ];
 
 const recruiterNav: NavItem[] = [

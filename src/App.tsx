@@ -19,7 +19,6 @@ import Jobs from "./pages/student/Jobs";
 import Applications from "./pages/student/Applications";
 import ResumeBuilder from "./pages/student/ResumeBuilder";
 import Settings from "./pages/Settings";
-import PortfolioPreview from "./pages/PortfolioPreview";
 import RecruiterDashboard from "./pages/recruiter/Dashboard";
 import SavedProfiles from "./pages/recruiter/SavedProfiles";
 import RecruiterJobs from "./pages/recruiter/Jobs";
@@ -75,9 +74,6 @@ const App = () => (
             
             {/* Shared Routes */}
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            
-            {/* Public/Preview Routes */}
-            <Route path="/portfolio/preview" element={<PortfolioPreview />} />
             
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="*" element={<NotFound />} />

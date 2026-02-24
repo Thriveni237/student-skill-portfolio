@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Filter, MapPin, ExternalLink, Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, Filter, MapPin, Bookmark, BookmarkCheck, Loader2, Mail } from 'lucide-react';
 import { api } from '@/lib/api';
 import { showError } from '@/utils/toast';
 import { useAuth } from '@/context/AuthContext';
@@ -54,7 +53,6 @@ const RecruiterDashboard = () => {
       setStudents(data || []);
     } catch (error: any) {
       showError(error.message);
-      // Fallback to mock if API fails during demo/presentation
       setStudents(mockStudents);
     } finally {
       setLoading(false);
@@ -130,11 +128,9 @@ const RecruiterDashboard = () => {
                             >
                               {savedIds.includes(student.id) ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
                             </Button>
-                            <Link to="/portfolio/preview">
-                              <Button variant="outline" size="sm">
-                                <ExternalLink className="w-4 h-4 mr-2" /> View Portfolio
-                              </Button>
-                            </Link>
+                            <Button variant="outline" size="sm">
+                              <Mail className="w-4 h-4 mr-2" /> Contact
+                            </Button>
                           </div>
                         </div>
                         

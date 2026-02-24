@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MapPin, ExternalLink, Trash2, Mail } from 'lucide-react';
+import { MapPin, Trash2, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { showSuccess } from '@/utils/toast';
 
@@ -63,11 +63,6 @@ const SavedProfiles = () => {
                           <Button variant="outline" size="sm" className="gap-2">
                             <Mail className="w-4 h-4" /> Contact
                           </Button>
-                          <Link to="/portfolio/preview">
-                            <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
-                              <ExternalLink className="w-4 h-4 mr-2" /> View Portfolio
-                            </Button>
-                          </Link>
                         </div>
                       </div>
                       
