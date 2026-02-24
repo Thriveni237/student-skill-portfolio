@@ -2,15 +2,21 @@
 
 const BASE_URL = 'http://localhost:8082/api';
 
+const handleResponse = async (response: Response) => {
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    throw new Error(data?.message || `Backend error: ${response.status}`);
+  }
+  return data;
+};
+
 export const api = {
   get: async (endpoint: string) => {
     try {
       const response = await fetch(`${BASE_URL}${endpoint}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Backend error: ${response.status}`);
-      }
-      return response.json();
+      return await handleResponse(response);
     } catch (error: any) {
       if (error.message.includes('Failed to fetch')) {
         throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
@@ -26,11 +32,7 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Backend error: ${response.status}`);
-      }
-      return response.json();
+      return await handleResponse(response);
     } catch (error: any) {
       if (error.message.includes('Failed to fetch')) {
         throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
@@ -46,11 +48,7 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Backend error: ${response.status}`);
-      }
-      return response.json();
+      return await handleResponse(response);
     } catch (error: any) {
       if (error.message.includes('Failed to fetch')) {
         throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
@@ -65,8 +63,9 @@ export const api = {
         method: 'DELETE',
       });
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Backend error: ${response.status}`);
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
+        throw new Error(data.message || `Backend error: ${response.status}`);
       }
       return true;
     } catch (error: any) {
