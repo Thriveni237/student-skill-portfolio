@@ -22,14 +22,17 @@ import {
   Mail,
   ShieldCheck,
   Eye,
+  FileDown,
   ExternalLink
 } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user, isDemo, login } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -127,10 +130,10 @@ const Profile = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
-              {isEditing ? "Edit Profile" : isPreview ? "Profile Preview" : "My Professional Profile"}
+              {isEditing ? "Edit Profile" : isPreview ? "Portfolio Preview" : "My Professional Profile"}
             </h1>
             <p className="text-slate-500">
-              {isEditing ? "Update your information below." : isPreview ? "This is how recruiters see your profile." : "This is how your professional identity appears."}
+              {isEditing ? "Update your information below." : isPreview ? "This is how recruiters see your portfolio." : "Manage your professional identity and portfolio."}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -140,11 +143,14 @@ const Profile = () => {
               </Button>
             ) : !isEditing ? (
               <>
-                <Button variant="outline" onClick={handleShare} className="gap-2">
+                <Button variant="outline" onClick={handleShare} className="gap-2 hidden sm:flex">
                   <Share2 className="w-4 h-4" /> Share
                 </Button>
-                <Button variant="outline" onClick={() => setIsPreview(true)} className="gap-2">
-                  <Eye className="w-4 h-4" /> Preview
+                <Button variant="outline" onClick={() => navigate('/dashboard/student/resume')} className="gap-2 hidden sm:flex">
+                  <FileDown className="w-4 h-4" /> Resume
+                </Button>
+                <Button variant="secondary" onClick={() => setIsPreview(true)} className="gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">
+                  <Eye className="w-4 h-4" /> Preview Portfolio
                 </Button>
                 <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700 gap-2">
                   <Edit3 className="w-4 h-4" /> Edit Profile
