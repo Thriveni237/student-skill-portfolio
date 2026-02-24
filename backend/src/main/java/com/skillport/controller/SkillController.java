@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/skills")
-@CrossOrigin(origins = "http://localhost:8080") // Allow React frontend
+@CrossOrigin(origins = "*")
 public class SkillController {
 
     @Autowired
@@ -16,7 +16,6 @@ public class SkillController {
 
     @GetMapping
     public List<Skill> getAllSkills() {
-        // In a real app, filter by logged-in user ID
         return skillRepository.findAll();
     }
 

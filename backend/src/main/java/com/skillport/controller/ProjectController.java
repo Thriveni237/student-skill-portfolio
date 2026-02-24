@@ -14,6 +14,11 @@ public class ProjectController {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @GetMapping
+    public List<Project> getAllProjects() {
+        return projectRepository.findAll();
+    }
+
     @GetMapping("/user/{userId}")
     public List<Project> getProjectsByUser(@PathVariable Long userId) {
         return projectRepository.findByUserId(userId);
