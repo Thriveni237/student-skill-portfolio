@@ -25,7 +25,8 @@ import {
   FileDown,
   ExternalLink,
   Code2,
-  Briefcase
+  Briefcase,
+  User
 } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { api } from '@/lib/api';
@@ -158,6 +159,132 @@ const Profile = () => {
 
   const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}` || 'U';
 
+  // If in preview mode, we show a completely different layout without the dashboard sidebar
+  if (isPreview) {
+    return (
+      <div className="min-h-screen bg-white animate-in fade-in duration-500">
+        {/* Preview Navigation Bar */}
+        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b">
+          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-600 p-1.5 rounded-lg">
+                <ShieldCheck className="text-white w-5 h-5" />
+              </div>
+              <span className="font-bold text-slate-900">Portfolio Preview</span>
+            </div>
+            <Button variant="outline" onClick={() => setIsPreview(false)} className="gap-2">
+              <ArrowLeft className="w-4 h-4" /> Exit Preview
+            </Button>
+          </div>
+        </nav>
+
+        <div className="max-w-5xl mx-auto px-4 py-12 space-y-20">
+          {/* Hero Section */}
+          <section className="text-center space-y-8">
+            <Avatar className="w-48 h-48 mx-auto border-8 border-white shadow-2xl">
+              <AvatarFallback className="text-6xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-4">
+              <h2 className="text-6xl font-extrabold text-slate-900 tracking-tight">
+                {profile.firstName} {profile.lastName}
+              </h2>
+              <div className="flex items-center justify-center gap-6 text-slate-500 text-lg">
+                <span className="flex items-center gap-2"><MapPin className="w-5 h-5 text-blue-500" /> {profile.location || 'Remote'}</span>
+                <span className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-emerald-500" /> Verified Student</span>
+              </div>
+            </div>
+            <div className="flex justify-center gap-4">
+              {profile.github && (
+                <Button variant="outline" size="lg" className="rounded-full px-6 hover:bg-slate-900 hover:text-white transition-all" asChild>
+                  <a href={`https://${profile.github}`} target="_blank" rel="noreferrer"><Github className="w-5 h-5 mr-2" /> GitHub</a>
+                </Button>
+              )}
+              {profile.linkedin && (
+                <Button variant="outline" size="lg" className="rounded-full px-6 hover:bg-blue-600 hover:text-white transition-all" asChild>
+                  <a href={`https://${profile.linkedin}`} target="_blank" rel="noreferrer"><Linkedin className="w-5 h-5 mr-2" /> LinkedIn</a>
+                </Button>
+              )}
+            </div>
+          </section>
+
+          <div className="grid lg:grid-cols-3 gap-16">
+            <div className="lg:col-span-2 space-y-16">
+              {/* About Section */}
+              <section className="space-y-6">
+                <h3 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+                  <User className="w-8 h-8 text-blue-600" /> About Me
+                </h3>
+                <p className="text-2xl text-slate-600 leading-relaxed font-light">
+                  {profile.bio || "I'm a dedicated student building the future of technology."}
+                </p>
+              </section>
+
+              {/* Skills Section */}
+              <section className="space-y-8">
+                <h3 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+                  <Code2 className="w-8 h-8 text-blue-600" /> Technical Expertise
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {portfolioData.skills.length > 0 ? portfolioData.skills.map((skill, i) => (
+                    <div key={i} className="p-6 bg-slate-50 rounded-2xl flex items-center justify-between hover:bg-blue-50 transition-colors group">
+                      <span className="text-xl font-bold text-slate-900">{skill.name}</span>
+                      <Badge className="bg-blue-600 text-white border-none px-3 py-1">
+                        {skill.level}
+                      </Badge>
+                    </div>
+                  )) : <p className="text-slate-400 italic">No skills listed yet.</p>}
+                </div>
+              </section>
+            </div>
+
+            {/* Projects Sidebar */}
+            <div className="space-y-16">
+              <section className="space-y-8">
+                <h3 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+                  <Briefcase className="w-8 h-8 text-blue-600" /> Projects
+                </h3>
+                <div className="space-y-6">
+                  {portfolioData.projects.length > 0 ? portfolioData.projects.map((project, i) => (
+                    <Card key={i} className="border-none shadow-lg hover:shadow-xl transition-all group overflow-hidden">
+                      <CardContent className="p-6 space-y-4">
+                        <h4 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{project.title}</h4>
+                        <p className="text-slate-600 leading-relaxed">{project.description}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {project.tags && typeof project.tags === 'string' ? project.tags.split(',').map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="bg-slate-100 text-slate-600 font-normal">
+                              {tag.trim()}
+                            </Badge>
+                          )) : null}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )) : <p className="text-slate-400 italic">No projects featured yet.</p>}
+                </div>
+              </section>
+
+              {/* Contact Card */}
+              <Card className="bg-slate-900 text-white border-none shadow-2xl rounded-3xl">
+                <CardContent className="p-10 space-y-8">
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-bold">Let's Work Together</h3>
+                    <p className="text-slate-400">I'm currently open to internships and junior developer roles.</p>
+                  </div>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white h-14 text-xl font-bold rounded-2xl" asChild>
+                    <a href={`mailto:${user?.email}`}>
+                      <Mail className="w-6 h-6 mr-3" /> Contact Me
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DashboardLayout role="student">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -165,18 +292,14 @@ const Profile = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
-              {isEditing ? "Edit Profile" : isPreview ? "Portfolio Preview" : "My Professional Profile"}
+              {isEditing ? "Edit Profile" : "My Professional Profile"}
             </h1>
             <p className="text-slate-500">
-              {isEditing ? "Update your information below." : isPreview ? "This is how recruiters see your portfolio." : "Manage your professional identity and portfolio."}
+              {isEditing ? "Update your information below." : "Manage your professional identity and portfolio."}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {isPreview ? (
-              <Button variant="outline" onClick={() => setIsPreview(false)} className="gap-2 bg-white shadow-sm">
-                <ArrowLeft className="w-4 h-4" /> Exit Preview
-              </Button>
-            ) : !isEditing ? (
+            {!isEditing ? (
               <>
                 <Button variant="outline" onClick={handleShare} className="gap-2 hidden sm:flex">
                   <Share2 className="w-4 h-4" /> Share
@@ -297,112 +420,6 @@ const Profile = () => {
               </Card>
             </div>
           </form>
-        ) : isPreview ? (
-          /* PORTFOLIO PREVIEW MODE - COMPLETELY DIFFERENT DESIGN */
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12 pb-20">
-            {/* Premium Hero Section */}
-            <div className="relative text-center space-y-6 py-12">
-              <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-50 via-transparent to-transparent opacity-70" />
-              <Avatar className="w-40 h-40 mx-auto border-8 border-white shadow-2xl">
-                <AvatarFallback className="text-5xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="space-y-2">
-                <h2 className="text-5xl font-extrabold text-slate-900 tracking-tight">
-                  {profile.firstName} {profile.lastName}
-                </h2>
-                <div className="flex items-center justify-center gap-4 text-slate-500 font-medium">
-                  <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-blue-500" /> {profile.location || 'Remote'}</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                  <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-500" /> Verified Student</span>
-                </div>
-              </div>
-              <div className="flex justify-center gap-4 pt-4">
-                {profile.github && (
-                  <Button variant="outline" size="icon" className="rounded-full w-12 h-12 hover:bg-slate-900 hover:text-white transition-all" asChild>
-                    <a href={`https://${profile.github}`} target="_blank" rel="noreferrer"><Github className="w-5 h-5" /></a>
-                  </Button>
-                )}
-                {profile.linkedin && (
-                  <Button variant="outline" size="icon" className="rounded-full w-12 h-12 hover:bg-blue-600 hover:text-white transition-all" asChild>
-                    <a href={`https://${profile.linkedin}`} target="_blank" rel="noreferrer"><Linkedin className="w-5 h-5" /></a>
-                  </Button>
-                )}
-                {profile.website && (
-                  <Button variant="outline" size="icon" className="rounded-full w-12 h-12 hover:bg-indigo-600 hover:text-white transition-all" asChild>
-                    <a href={`https://${profile.website}`} target="_blank" rel="noreferrer"><Globe className="w-5 h-5" /></a>
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-3 gap-12">
-              {/* Left Column: About & Skills */}
-              <div className="lg:col-span-2 space-y-12">
-                <section className="space-y-4">
-                  <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                    <User className="w-6 h-6 text-blue-600" /> About Me
-                  </h3>
-                  <p className="text-xl text-slate-600 leading-relaxed font-light">
-                    {profile.bio || "I'm a dedicated student building the future of technology."}
-                  </p>
-                </section>
-
-                <section className="space-y-6">
-                  <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                    <Code2 className="w-6 h-6 text-blue-600" /> Technical Expertise
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {portfolioData.skills && portfolioData.skills.length > 0 ? portfolioData.skills.map((skill, i) => (
-                      <div key={i} className="px-4 py-2 bg-white border border-slate-100 shadow-sm rounded-2xl flex items-center gap-3 hover:border-blue-200 transition-colors">
-                        <span className="font-bold text-slate-900">{skill.name}</span>
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-none font-normal">
-                          {skill.level}
-                        </Badge>
-                      </div>
-                    )) : <p className="text-slate-400 italic">No skills listed yet.</p>}
-                  </div>
-                </section>
-              </div>
-
-              {/* Right Column: Projects & Contact */}
-              <div className="space-y-12">
-                <section className="space-y-6">
-                  <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                    <Briefcase className="w-6 h-6 text-blue-600" /> Featured Projects
-                  </h3>
-                  <div className="space-y-4">
-                    {portfolioData.projects && portfolioData.projects.length > 0 ? portfolioData.projects.map((project, i) => (
-                      <Card key={i} className="border-none shadow-md hover:shadow-lg transition-all overflow-hidden group">
-                        <CardContent className="p-5 space-y-3">
-                          <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{project.title}</h4>
-                          <p className="text-sm text-slate-500 line-clamp-2">{project.description}</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {(project.tags?.split(',') || []).map((tag: string) => (
-                              <span key={tag} className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{tag.trim()}</span>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )) : <p className="text-slate-400 italic">No projects featured yet.</p>}
-                  </div>
-                </section>
-
-                <Card className="bg-slate-900 text-white border-none shadow-2xl">
-                  <CardContent className="p-8 space-y-6">
-                    <h3 className="text-xl font-bold">Let's Connect</h3>
-                    <p className="text-slate-400 text-sm">Interested in working together? Reach out via email or social media.</p>
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white border-none h-12 text-lg font-bold" asChild>
-                      <a href={`mailto:${user?.email}`}>
-                        <Mail className="w-5 h-5 mr-2" /> Send Message
-                      </a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
         ) : (
           /* STANDARD DASHBOARD VIEW MODE */
           <div className="grid md:grid-cols-3 gap-8 animate-in fade-in duration-300">
