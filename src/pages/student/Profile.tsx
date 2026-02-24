@@ -58,29 +58,20 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    if (user && !isDemo) {
+    if (user?.id && !isDemo) {
       fetchProfile();
       fetchPortfolioExtras();
     } else if (isDemo) {
       setProfile({
-        firstName: user.firstName || 'Alex',
-        lastName: user.lastName || 'Johnson',
-        bio: 'Passionate software engineering student with a focus on full-stack development. I love building scalable applications and learning new technologies.',
+        firstName: user?.firstName || 'Alex',
+        lastName: user?.lastName || 'Johnson',
+        bio: 'Passionate software engineering student with a focus on full-stack development.',
         location: 'San Francisco, CA',
         github: 'github.com/alexj',
         linkedin: 'linkedin.com/in/alexj',
         website: 'alexj.dev'
       });
-      setPortfolioData({
-        skills: [
-          { name: 'React', level: 'Expert' },
-          { name: 'TypeScript', level: 'Advanced' },
-          { name: 'Node.js', level: 'Intermediate' }
-        ],
-        projects: [
-          { title: 'E-Commerce Platform', description: 'A full-stack shop with React and Stripe integration.', tags: 'React, Node, SQL' }
-        ]
-      });
+      setFetching(false);
     }
   }, [user, isDemo]);
 
@@ -99,7 +90,7 @@ const Profile = () => {
         });
       }
     } catch (error: any) {
-      showError("Failed to load profile data");
+      showError(error.message || "Failed to load profile data");
     } finally {
       setFetching(false);
     }
@@ -159,11 +150,9 @@ const Profile = () => {
 
   const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}` || 'U';
 
-  // If in preview mode, we show a completely different layout without the dashboard sidebar
   if (isPreview) {
     return (
       <div className="min-h-screen bg-white animate-in fade-in duration-500">
-        {/* Preview Navigation Bar */}
         <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b">
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -179,7 +168,6 @@ const Profile = () => {
         </nav>
 
         <div className="max-w-5xl mx-auto px-4 py-12 space-y-20">
-          {/* Hero Section */}
           <section className="text-center space-y-8">
             <Avatar className="w-48 h-48 mx-auto border-8 border-white shadow-2xl">
               <AvatarFallback className="text-6xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold">
@@ -211,7 +199,6 @@ const Profile = () => {
 
           <div className="grid lg:grid-cols-3 gap-16">
             <div className="lg:col-span-2 space-y-16">
-              {/* About Section */}
               <section className="space-y-6">
                 <h3 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
                   <User className="w-8 h-8 text-blue-600" /> About Me
@@ -221,7 +208,6 @@ const Profile = () => {
                 </p>
               </section>
 
-              {/* Skills Section */}
               <section className="space-y-8">
                 <h3 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
                   <Code2 className="w-8 h-8 text-blue-600" /> Technical Expertise
@@ -239,7 +225,6 @@ const Profile = () => {
               </section>
             </div>
 
-            {/* Projects Sidebar */}
             <div className="space-y-16">
               <section className="space-y-8">
                 <h3 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
@@ -264,7 +249,6 @@ const Profile = () => {
                 </div>
               </section>
 
-              {/* Contact Card */}
               <Card className="bg-slate-900 text-white border-none shadow-2xl rounded-3xl">
                 <CardContent className="p-10 space-y-8">
                   <div className="space-y-2">
@@ -288,7 +272,6 @@ const Profile = () => {
   return (
     <DashboardLayout role="student">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header with Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
@@ -329,7 +312,6 @@ const Profile = () => {
         </div>
 
         {isEditing ? (
-          /* EDIT MODE */
           <form onSubmit={handleSave} className="grid md:grid-cols-3 gap-8 animate-in fade-in duration-300">
             <div className="md:col-span-2 space-y-6">
               <Card className="border-none shadow-sm">
@@ -421,10 +403,8 @@ const Profile = () => {
             </div>
           </form>
         ) : (
-          /* STANDARD DASHBOARD VIEW MODE */
           <div className="grid md:grid-cols-3 gap-8 animate-in fade-in duration-300">
             <div className="md:col-span-2 space-y-8">
-              {/* Profile Hero */}
               <Card className="border-none shadow-sm overflow-hidden">
                 <div className="h-40 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600" />
                 <CardContent className="relative pt-0 pb-8 px-8">
@@ -450,7 +430,6 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Bio Section */}
               <Card className="border-none shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-xl">About Me</CardTitle>
@@ -463,9 +442,7 @@ const Profile = () => {
               </Card>
             </div>
 
-            {/* Sidebar Info */}
             <div className="space-y-6">
-              {/* Social Links Card */}
               <Card className="border-none shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Connect</CardTitle>
@@ -492,35 +469,6 @@ const Profile = () => {
                       <ExternalLink className="w-3 h-3 ml-auto text-indigo-400" />
                     </a>
                   )}
-                  {!profile.github && !profile.linkedin && !profile.website && (
-                    <p className="text-sm text-slate-500 italic text-center py-4">No social links added yet.</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Profile Status */}
-              <Card className="border-none shadow-sm bg-slate-900 text-white">
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg mb-4">Profile Status</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-400">Visibility</span>
-                      <span className="text-emerald-400 font-medium">Public</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-400">Verification</span>
-                      <span className="text-blue-400 font-medium">Verified Student</span>
-                    </div>
-                    <div className="pt-2">
-                      <div className="flex justify-between text-xs mb-1.5">
-                        <span className="text-slate-400">Profile Strength</span>
-                        <span className="text-white">85%</span>
-                      </div>
-                      <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 h-full w-[85%]" />
-                      </div>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </div>
