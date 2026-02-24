@@ -28,6 +28,13 @@ public class User {
     private String linkedin;
     private String website;
 
+    // Settings
+    private String language = "English (US)";
+    private boolean darkMode = false;
+    private boolean notifMessages = true;
+    private boolean notifApplications = true;
+    private boolean notifMarketing = false;
+
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Project> projects;
@@ -71,4 +78,19 @@ public class User {
 
     public String getWebsite() { return website; }
     public void setWebsite(String website) { this.website = website; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
+
+    public boolean isDarkMode() { return darkMode; }
+    public void setDarkMode(boolean darkMode) { this.darkMode = darkMode; }
+
+    public boolean isNotifMessages() { return notifMessages; }
+    public void setNotifMessages(boolean notifMessages) { this.notifMessages = notifMessages; }
+
+    public boolean isNotifApplications() { return notifApplications; }
+    public void setNotifApplications(boolean notifApplications) { this.notifApplications = notifApplications; }
+
+    public boolean isNotifMarketing() { return notifMarketing; }
+    public void setNotifMarketing(boolean notifMarketing) { this.notifMarketing = notifMarketing; }
 }

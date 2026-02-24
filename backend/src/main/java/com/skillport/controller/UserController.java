@@ -86,22 +86,42 @@ public class UserController {
         return userRepository.findById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body((User) null)); // Explicitly return 404 if user not found
+                .body((User) null));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
         return userRepository.findById(id).map(user -> {
-            user.setFirstName(updatedUser.getFirstName());
-            user.setLastName(updatedUser.getLastName());
-            user.setBio(updatedUser.getBio());
-            user.setLocation(updatedUser.getLocation());
-            user.setGithub(updatedUser.getGithub());
-            user.setLinkedin(updatedUser.getLinkedin());
-            user.setWebsite(updatedUser.getWebsite());
+            if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
+            if (updatedUser.getLastName() != null) user.setLastName(updatedUser.getLastName());
+            if (updatedUser.getBio() != null) user.setBio(updatedUser.getBio());
+            if (updatedUser.getLocation() != null) user.setLocation(updatedUser.getLocation());
+            if (updatedUser.getGithub() != null) user.setGithub(updatedUser.getGithub());
+            if (updatedUser.getLinkedin() != null) user.setLinkedin(updatedUser.getLinkedin());
+            if (updatedUser.getWebsite() != null) user.setWebsite(updatedUser.getWebsite());
+            
+            // Settings fields
+            if (updatedUser.getLanguage() != null) user.setLanguage(updatedUser.getLanguage());
+            user.setDarkMode(updatedUser.isDarkMode());
+            user.setNotifMessages(updatedUser.isNotifMessages());
+            user.setNotifApplications(updatedUser.isNotifApplications());
+            user.setNotifMarketing(updatedUser.isNotifMarketing());
+            
+            // Password change (if provided)
+            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+                user.setPassword(updatedUser.getPassword());
+            }
             
             User saved = userRepository.save(user);
             return ResponseEntity.ok(saved);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        return userRepository.findById(id).map(user -> {
+            userRepository.delete(user);
+            return ResponseEntity.ok("{\"message\": \"Account deleted successfully\"}");
         }).orElse(ResponseEntity.notFound().build());
     }
 }
