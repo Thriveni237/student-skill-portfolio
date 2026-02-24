@@ -20,7 +20,9 @@ import {
   Loader2,
   ArrowLeft,
   Mail,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
+  ExternalLink
 } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { api } from '@/lib/api';
@@ -29,6 +31,7 @@ import { useAuth } from '@/context/AuthContext';
 const Profile = () => {
   const { user, isDemo, login } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fetching, setFetching] = useState(!isDemo);
   const [profile, setProfile] = useState({
@@ -124,17 +127,24 @@ const Profile = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
-              {isEditing ? "Edit Profile" : "My Professional Profile"}
+              {isEditing ? "Edit Profile" : isPreview ? "Profile Preview" : "My Professional Profile"}
             </h1>
             <p className="text-slate-500">
-              {isEditing ? "Update your information below." : "This is how your professional identity appears."}
+              {isEditing ? "Update your information below." : isPreview ? "This is how recruiters see your profile." : "This is how your professional identity appears."}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {!isEditing ? (
+            {isPreview ? (
+              <Button variant="outline" onClick={() => setIsPreview(false)} className="gap-2">
+                <ArrowLeft className="w-4 h-4" /> Back to View
+              </Button>
+            ) : !isEditing ? (
               <>
                 <Button variant="outline" onClick={handleShare} className="gap-2">
                   <Share2 className="w-4 h-4" /> Share
+                </Button>
+                <Button variant="outline" onClick={() => setIsPreview(true)} className="gap-2">
+                  <Eye className="w-4 h-4" /> Preview
                 </Button>
                 <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700 gap-2">
                   <Edit3 className="w-4 h-4" /> Edit Profile
@@ -247,7 +257,7 @@ const Profile = () => {
             </div>
           </form>
         ) : (
-          /* VIEW MODE */
+          /* VIEW / PREVIEW MODE */
           <div className="grid md:grid-cols-3 gap-8 animate-in fade-in duration-300">
             <div className="md:col-span-2 space-y-8">
               {/* Profile Hero */}
