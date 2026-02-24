@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { 
   Github, 
   Linkedin, 
   Globe, 
   MapPin, 
-  User, 
   Edit3, 
   Share2, 
   CheckCircle2, 
@@ -23,12 +23,15 @@ import {
   ShieldCheck,
   Eye,
   FileDown,
-  ExternalLink
+  ExternalLink,
+  Code2,
+  Briefcase
 } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 const Profile = () => {
   const { user, isDemo, login } = useAuth();
@@ -37,6 +40,7 @@ const Profile = () => {
   const [isPreview, setIsPreview] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fetching, setFetching] = useState(!isDemo);
+  
   const [profile, setProfile] = useState({
     firstName: '',
     lastName: '',
@@ -47,18 +51,34 @@ const Profile = () => {
     website: ''
   });
 
+  const [portfolioData, setPortfolioData] = useState({
+    skills: [] as any[],
+    projects: [] as any[]
+  });
+
   useEffect(() => {
     if (user && !isDemo) {
       fetchProfile();
+      fetchPortfolioExtras();
     } else if (isDemo) {
       setProfile({
-        firstName: user.firstName || 'Demo',
-        lastName: user.lastName || 'User',
+        firstName: user.firstName || 'Alex',
+        lastName: user.lastName || 'Johnson',
         bio: 'Passionate software engineering student with a focus on full-stack development. I love building scalable applications and learning new technologies.',
         location: 'San Francisco, CA',
-        github: 'github.com/demouser',
-        linkedin: 'linkedin.com/in/demouser',
-        website: 'demouser.dev'
+        github: 'github.com/alexj',
+        linkedin: 'linkedin.com/in/alexj',
+        website: 'alexj.dev'
+      });
+      setPortfolioData({
+        skills: [
+          { name: 'React', level: 'Expert' },
+          { name: 'TypeScript', level: 'Advanced' },
+          { name: 'Node.js', level: 'Intermediate' }
+        ],
+        projects: [
+          { title: 'E-Commerce Platform', description: 'A full-stack shop with React and Stripe integration.', tags: 'React, Node, SQL' }
+        ]
       });
     }
   }, [user, isDemo]);
@@ -81,6 +101,21 @@ const Profile = () => {
       showError("Failed to load profile data");
     } finally {
       setFetching(false);
+    }
+  };
+
+  const fetchPortfolioExtras = async () => {
+    try {
+      const [skills, projects] = await Promise.all([
+        api.get('/skills'),
+        api.get('/projects')
+      ]);
+      setPortfolioData({
+        skills: skills || [],
+        projects: projects || []
+      });
+    } catch (e) {
+      console.error("Failed to fetch portfolio extras");
     }
   };
 
@@ -138,8 +173,8 @@ const Profile = () => {
           </div>
           <div className="flex items-center gap-3">
             {isPreview ? (
-              <Button variant="outline" onClick={() => setIsPreview(false)} className="gap-2">
-                <ArrowLeft className="w-4 h-4" /> Back to View
+              <Button variant="outline" onClick={() => setIsPreview(false)} className="gap-2 bg-white shadow-sm">
+                <ArrowLeft className="w-4 h-4" /> Exit Preview
               </Button>
             ) : !isEditing ? (
               <>
@@ -262,8 +297,114 @@ const Profile = () => {
               </Card>
             </div>
           </form>
+        ) : isPreview ? (
+          /* PORTFOLIO PREVIEW MODE - COMPLETELY DIFFERENT DESIGN */
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12 pb-20">
+            {/* Premium Hero Section */}
+            <div className="relative text-center space-y-6 py-12">
+              <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-50 via-transparent to-transparent opacity-70" />
+              <Avatar className="w-40 h-40 mx-auto border-8 border-white shadow-2xl">
+                <AvatarFallback className="text-5xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="space-y-2">
+                <h2 className="text-5xl font-extrabold text-slate-900 tracking-tight">
+                  {profile.firstName} {profile.lastName}
+                </h2>
+                <div className="flex items-center justify-center gap-4 text-slate-500 font-medium">
+                  <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-blue-500" /> {profile.location || 'Remote'}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                  <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-500" /> Verified Student</span>
+                </div>
+              </div>
+              <div className="flex justify-center gap-4 pt-4">
+                {profile.github && (
+                  <Button variant="outline" size="icon" className="rounded-full w-12 h-12 hover:bg-slate-900 hover:text-white transition-all" asChild>
+                    <a href={`https://${profile.github}`} target="_blank" rel="noreferrer"><Github className="w-5 h-5" /></a>
+                  </Button>
+                )}
+                {profile.linkedin && (
+                  <Button variant="outline" size="icon" className="rounded-full w-12 h-12 hover:bg-blue-600 hover:text-white transition-all" asChild>
+                    <a href={`https://${profile.linkedin}`} target="_blank" rel="noreferrer"><Linkedin className="w-5 h-5" /></a>
+                  </Button>
+                )}
+                {profile.website && (
+                  <Button variant="outline" size="icon" className="rounded-full w-12 h-12 hover:bg-indigo-600 hover:text-white transition-all" asChild>
+                    <a href={`https://${profile.website}`} target="_blank" rel="noreferrer"><Globe className="w-5 h-5" /></a>
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-12">
+              {/* Left Column: About & Skills */}
+              <div className="lg:col-span-2 space-y-12">
+                <section className="space-y-4">
+                  <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                    <User className="w-6 h-6 text-blue-600" /> About Me
+                  </h3>
+                  <p className="text-xl text-slate-600 leading-relaxed font-light">
+                    {profile.bio || "I'm a dedicated student building the future of technology."}
+                  </p>
+                </section>
+
+                <section className="space-y-6">
+                  <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                    <Code2 className="w-6 h-6 text-blue-600" /> Technical Expertise
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
+                    {portfolioData.skills.length > 0 ? portfolioData.skills.map((skill, i) => (
+                      <div key={i} className="px-4 py-2 bg-white border border-slate-100 shadow-sm rounded-2xl flex items-center gap-3 hover:border-blue-200 transition-colors">
+                        <span className="font-bold text-slate-900">{skill.name}</span>
+                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-none font-normal">
+                          {skill.level}
+                        </Badge>
+                      </div>
+                    )) : <p className="text-slate-400 italic">No skills listed yet.</p>}
+                  </div>
+                </section>
+              </div>
+
+              {/* Right Column: Projects & Contact */}
+              <div className="space-y-12">
+                <section className="space-y-6">
+                  <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                    <Briefcase className="w-6 h-6 text-blue-600" /> Featured Projects
+                  </h3>
+                  <div className="space-y-4">
+                    {portfolioData.projects.length > 0 ? portfolioData.projects.map((project, i) => (
+                      <Card key={i} className="border-none shadow-md hover:shadow-lg transition-all overflow-hidden group">
+                        <CardContent className="p-5 space-y-3">
+                          <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{project.title}</h4>
+                          <p className="text-sm text-slate-500 line-clamp-2">{project.description}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {project.tags?.split(',').map((tag: string) => (
+                              <span key={tag} className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{tag.trim()}</span>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )) : <p className="text-slate-400 italic">No projects featured yet.</p>}
+                  </div>
+                </section>
+
+                <Card className="bg-slate-900 text-white border-none shadow-2xl">
+                  <CardContent className="p-8 space-y-6">
+                    <h3 className="text-xl font-bold">Let's Connect</h3>
+                    <p className="text-slate-400 text-sm">Interested in working together? Reach out via email or social media.</p>
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white border-none h-12 text-lg font-bold" asChild>
+                      <a href={`mailto:${user?.email}`}>
+                        <Mail className="w-5 h-5 mr-2" /> Send Message
+                      </a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
         ) : (
-          /* VIEW / PREVIEW MODE */
+          /* STANDARD DASHBOARD VIEW MODE */
           <div className="grid md:grid-cols-3 gap-8 animate-in fade-in duration-300">
             <div className="md:col-span-2 space-y-8">
               {/* Profile Hero */}
