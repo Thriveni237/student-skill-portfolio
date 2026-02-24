@@ -1,10 +1,17 @@
 "use client";
 
-const BASE_URL = 'http://localhost:8082/api';
+// Using relative path so Vite proxy can handle the request
+const BASE_URL = '/api';
 
 const handleResponse = async (response: Response) => {
   const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  let data = null;
+  
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (e) {
+    console.error("Failed to parse JSON response:", text);
+  }
 
   if (!response.ok) {
     throw new Error(data?.message || `Backend error: ${response.status}`);
@@ -18,9 +25,6 @@ export const api = {
       const response = await fetch(`${BASE_URL}${endpoint}`);
       return await handleResponse(response);
     } catch (error: any) {
-      if (error.message.includes('Failed to fetch')) {
-        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
-      }
       throw error;
     }
   },
@@ -34,9 +38,6 @@ export const api = {
       });
       return await handleResponse(response);
     } catch (error: any) {
-      if (error.message.includes('Failed to fetch')) {
-        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
-      }
       throw error;
     }
   },
@@ -50,9 +51,6 @@ export const api = {
       });
       return await handleResponse(response);
     } catch (error: any) {
-      if (error.message.includes('Failed to fetch')) {
-        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
-      }
       throw error;
     }
   },
@@ -64,14 +62,14 @@ export const api = {
       });
       if (!response.ok) {
         const text = await response.text();
-        const data = text ? JSON.parse(text) : {};
+        let data = { message: "" };
+        try {
+          data = text ? JSON.parse(text) : { message: "" };
+        } catch (e) {}
         throw new Error(data.message || `Backend error: ${response.status}`);
       }
       return true;
     } catch (error: any) {
-      if (error.message.includes('Failed to fetch')) {
-        throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
-      }
       throw error;
     }
   },
