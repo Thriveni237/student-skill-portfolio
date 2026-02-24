@@ -1,6 +1,6 @@
 "use client";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "http://localhost:8082/api";
 
 async function request(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('auth_token');
@@ -37,7 +37,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
     return await response.json();
   } catch (error: any) {
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8080.");
+      throw new Error("Cannot connect to backend. Please ensure your Spring Boot app is running on port 8082.");
     }
     throw error;
   }
