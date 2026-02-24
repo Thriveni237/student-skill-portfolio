@@ -12,10 +12,11 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
 const Jobs = () => {
-  const { isDemo } = useAuth();
+  const { user, isDemo } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchJobs();
@@ -27,7 +28,6 @@ const Jobs = () => {
       setJobs(Array.isArray(data) ? data : []);
     } catch (error: any) {
       if (!isDemo) showError(error.message);
-      // Fallback for demo if backend is down
       if (isDemo) {
         setJobs([
           {
@@ -46,8 +46,27 @@ const Jobs = () => {
     }
   };
 
-  const handleApply = (title: string) => {
-    showSuccess(`Application submitted for ${title}!`);
+  const handleApply = async (job: any) => {
+    if (isDemo) {
+      showSuccess(`Application submitted for ${job.title} (Demo Mode)`);
+      return;
+    }
+
+    setApplyingId(job.id);
+    try {
+      await api.post('/applications', {
+        studentId: user.id,
+        jobId: job.id,
+        jobTitle: job.title,
+        companyName: job.company,
+        status: 'Pending'
+      });
+      showSuccess(`Successfully applied for ${job.title}!`);
+    } catch (error: any) {
+      showError(error.message || "Failed to submit application");
+    } finally {
+      setApplyingId(null);
+    }
   };
 
   const filteredJobs = jobs.filter(job => 
@@ -107,8 +126,13 @@ const Jobs = () => {
                       </div>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm">View Details</Button>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => handleApply(job.title)}>
-                          Apply Now
+                        <Button 
+                          size="sm" 
+                          className="bg-blue-600 hover:bg-blue-700" 
+                          onClick={() => handleApply(job)}
+                          disabled={applyingId === job.id}
+                        >
+                          {applyingId === job.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply Now"}
                         </Button>
                       </div>
                     </div>
