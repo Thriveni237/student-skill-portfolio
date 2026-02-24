@@ -14,6 +14,9 @@ public class Skill {
 
     private String name;
     private String level; // Beginner, Intermediate, Advanced, Expert
+    private String category; // Frontend, Backend, Design, Tools, etc.
+    private Integer yearsOfExperience;
+    private boolean isLearningPath; // If true, it's a skill the user is currently learning
 
     @ManyToOne
     @JoinColumn(name = "user_id")

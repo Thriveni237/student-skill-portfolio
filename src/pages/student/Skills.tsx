@@ -1,14 +1,33 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Code2, Loader2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Plus, 
+  Trash2, 
+  Code2, 
+  Loader2, 
+  Zap, 
+  BookOpen, 
+  BarChart3, 
+  Layers,
+  Star,
+  Clock
+} from 'lucide-react';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { showSuccess, showError } from '@/utils/toast';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
@@ -18,24 +37,52 @@ interface Skill {
   id: string;
   name: string;
   level: string;
+  category: string;
+  yearsOfExperience?: number;
+  isLearningPath: boolean;
 }
+
+const CATEGORIES = [
+  "Frontend",
+  "Backend",
+  "Full Stack",
+  "Mobile",
+  "Design",
+  "DevOps",
+  "Data Science",
+  "Tools",
+  "Soft Skills"
+];
 
 const Skills = () => {
   const { user, isDemo } = useAuth();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(!isDemo);
   const [adding, setAdding] = useState(false);
+  
+  // Form State
   const [newSkill, setNewSkill] = useState('');
-  const [newLevel, setNewLevel] = useState('Beginner');
+  const [newLevel, setNewLevel] = useState('Intermediate');
+  const [newCategory, setNewCategory] = useState('Frontend');
+  const [isLearning, setIsLearning] = useState(false);
 
   useEffect(() => {
     if (user && !isDemo) fetchSkills();
+    else if (isDemo) {
+      setSkills([
+        { id: '1', name: 'React', level: 'Expert', category: 'Frontend', isLearningPath: false, yearsOfExperience: 3 },
+        { id: '2', name: 'TypeScript', level: 'Advanced', category: 'Frontend', isLearningPath: false, yearsOfExperience: 2 },
+        { id: '3', name: 'Node.js', level: 'Intermediate', category: 'Backend', isLearningPath: false, yearsOfExperience: 1 },
+        { id: '4', name: 'Docker', level: 'Beginner', category: 'DevOps', isLearningPath: true, yearsOfExperience: 0 },
+      ]);
+      setLoading(false);
+    }
   }, [user, isDemo]);
 
   const fetchSkills = async () => {
     try {
       const data = await api.get('/skills');
-      setSkills(data || []);
+      setSkills(Array.isArray(data) ? data : []);
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -46,20 +93,27 @@ const Skills = () => {
   const handleAddSkill = async () => {
     if (!newSkill) return;
     
+    const skillData = { 
+      name: newSkill, 
+      level: newLevel, 
+      category: newCategory, 
+      isLearningPath: isLearning,
+      yearsOfExperience: isLearning ? 0 : 1
+    };
+
     if (isDemo) {
-      const mockSkill = { id: Math.random().toString(), name: newSkill, level: newLevel };
-      setSkills([mockSkill, ...skills]);
+      setSkills([{ ...skillData, id: Math.random().toString() } as Skill, ...skills]);
       setNewSkill('');
-      showSuccess(`Added ${newSkill} (Demo Mode)`);
+      showSuccess(`Added ${newSkill} (Demo)`);
       return;
     }
 
     setAdding(true);
     try {
-      const data = await api.post('/skills', { name: newSkill, level: newLevel });
+      const data = await api.post('/skills', skillData);
       setSkills([data, ...skills]);
       setNewSkill('');
-      showSuccess(`Added ${newSkill} to your skills!`);
+      showSuccess(`Added ${newSkill} to your profile!`);
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -70,10 +124,8 @@ const Skills = () => {
   const removeSkill = async (id: string) => {
     if (isDemo) {
       setSkills(skills.filter(s => s.id !== id));
-      showSuccess("Skill removed (Demo Mode)");
       return;
     }
-
     try {
       await api.delete(`/skills/${id}`);
       setSkills(skills.filter(s => s.id !== id));
@@ -83,39 +135,91 @@ const Skills = () => {
     }
   };
 
-  const getLevelColor = (level: string) => {
+  const getProficiencyValue = (level: string) => {
     switch (level) {
-      case 'Beginner': return 'bg-slate-100 text-slate-700';
-      case 'Intermediate': return 'bg-blue-100 text-blue-700';
-      case 'Advanced': return 'bg-indigo-100 text-indigo-700';
-      case 'Expert': return 'bg-emerald-100 text-emerald-700';
-      default: return 'bg-slate-100 text-slate-700';
+      case 'Beginner': return 25;
+      case 'Intermediate': return 50;
+      case 'Advanced': return 75;
+      case 'Expert': return 100;
+      default: return 0;
     }
   };
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'Beginner': return 'text-slate-500 bg-slate-100';
+      case 'Intermediate': return 'text-blue-600 bg-blue-50';
+      case 'Advanced': return 'text-indigo-600 bg-indigo-50';
+      case 'Expert': return 'text-emerald-600 bg-emerald-50';
+      default: return 'text-slate-500 bg-slate-100';
+    }
+  };
+
+  const groupedSkills = useMemo(() => {
+    const groups: Record<string, Skill[]> = {};
+    skills.filter(s => !s.isLearningPath).forEach(skill => {
+      if (!groups[skill.category]) groups[skill.category] = [];
+      groups[skill.category].push(skill);
+    });
+    return groups;
+  }, [skills]);
+
+  const learningPathSkills = useMemo(() => 
+    skills.filter(s => s.isLearningPath), 
+  [skills]);
 
   return (
     <DashboardLayout role="student">
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Skills & Expertise</h1>
-          <p className="text-slate-500">Manage your technical stack and proficiency levels.</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Skills & Expertise</h1>
+            <p className="text-slate-500">Manage your technical stack and track your learning journey.</p>
+          </div>
+          <div className="flex gap-3">
+            <Card className="border-none shadow-sm bg-blue-600 text-white px-4 py-2 flex items-center gap-3">
+              <Zap className="w-5 h-5" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wider opacity-80">Total Skills</p>
+                <p className="text-lg font-bold leading-none">{skills.length}</p>
+              </div>
+            </Card>
+          </div>
         </div>
 
-        <Card className="border-none shadow-sm">
+        {/* Add Skill Section */}
+        <Card className="border-none shadow-md overflow-hidden">
+          <div className="h-1 bg-blue-600" />
           <CardHeader>
-            <CardTitle className="text-lg">Add New Skill</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Plus className="w-5 h-5 text-blue-600" /> Add New Skill
+            </CardTitle>
+            <CardDescription>Add a skill you've mastered or one you're currently learning.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 items-end">
-              <div className="flex-1 space-y-2 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div className="md:col-span-1 space-y-2">
                 <Label>Skill Name</Label>
                 <Input 
-                  placeholder="e.g. Java, Python, Figma" 
+                  placeholder="e.g. Java, Figma" 
                   value={newSkill}
                   onChange={(e) => setNewSkill(e.target.value)}
                 />
               </div>
-              <div className="w-full md:w-48 space-y-2">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select value={newCategory} onValueChange={setNewCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label>Proficiency</Label>
                 <Select value={newLevel} onValueChange={setNewLevel}>
                   <SelectTrigger>
@@ -129,56 +233,145 @@ const Skills = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
-                onClick={handleAddSkill} 
-                className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto"
-                disabled={adding || !newSkill}
-              >
-                {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
-                Add Skill
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant={isLearning ? "secondary" : "outline"}
+                  className={cn("flex-1 gap-2", isLearning && "bg-amber-50 text-amber-700 border-amber-200")}
+                  onClick={() => setIsLearning(!isLearning)}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  {isLearning ? "Learning" : "Mastered"}
+                </Button>
+                <Button 
+                  onClick={handleAddSkill} 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={adding || !newSkill}
+                >
+                  {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {skills.map((skill) => (
-              <Card key={skill.id} className="border-none shadow-sm hover:shadow-md transition-shadow group">
-                <CardContent className="p-4 flex items-center justify-between">
+        <Tabs defaultValue="mastered" className="w-full">
+          <TabsList className="bg-slate-100 p-1 rounded-xl mb-6">
+            <TabsTrigger value="mastered" className="rounded-lg gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Star className="w-4 h-4" /> Mastered Skills
+            </TabsTrigger>
+            <TabsTrigger value="learning" className="rounded-lg gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Zap className="w-4 h-4" /> Learning Path
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="mastered" className="space-y-8 animate-in fade-in duration-500">
+            {Object.keys(groupedSkills).length > 0 ? (
+              Object.entries(groupedSkills).map(([category, categorySkills]) => (
+                <div key={category} className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-100 rounded-lg">
-                      <Code2 className="w-5 h-5 text-slate-600" />
+                    <div className="p-1.5 bg-blue-50 rounded-lg">
+                      <Layers className="w-4 h-4 text-blue-600" />
                     </div>
-                    <div>
-                      <p className="font-semibold text-slate-900">{skill.name}</p>
-                      <Badge variant="secondary" className={cn("mt-1 font-normal", getLevelColor(skill.level))}>
-                        {skill.level}
-                      </Badge>
-                    </div>
+                    <h3 className="text-lg font-bold text-slate-800">{category}</h3>
+                    <Badge variant="outline" className="text-slate-400 font-normal border-slate-200">
+                      {categorySkills.length}
+                    </Badge>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => removeSkill(skill.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-            {skills.length === 0 && (
-              <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed">
-                <p className="text-slate-500">No skills added yet. Start by adding your first skill above!</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categorySkills.map((skill) => (
+                      <Card key={skill.id} className="border-none shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                        <CardContent className="p-5 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                                <Code2 className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-900">{skill.name}</p>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Verified Skill</p>
+                              </div>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-slate-300 hover:text-red-600 h-8 w-8"
+                              onClick={() => removeSkill(skill.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-xs font-medium">
+                              <span className={cn("px-2 py-0.5 rounded-full", getLevelColor(skill.level))}>
+                                {skill.level}
+                              </span>
+                              <span className="text-slate-400 flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {skill.yearsOfExperience || 1}y exp
+                              </span>
+                            </div>
+                            <Progress value={getProficiencyValue(skill.level)} className="h-1.5" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-20 bg-white rounded-2xl border border-dashed">
+                <BarChart3 className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                <p className="text-slate-500">No mastered skills yet. Add your first one above!</p>
               </div>
             )}
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="learning" className="animate-in fade-in duration-500">
+            {learningPathSkills.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningPathSkills.map((skill) => (
+                  <Card key={skill.id} className="border-none shadow-sm bg-gradient-to-br from-white to-amber-50/30 group">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-amber-100 rounded-2xl">
+                          <Zap className="w-6 h-6 text-amber-600" />
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-slate-300 hover:text-red-600"
+                          onClick={() => removeSkill(skill.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900">{skill.name}</h3>
+                        <p className="text-sm text-slate-500 mt-1">Currently acquiring proficiency in {skill.category}</p>
+                      </div>
+                      <div className="pt-2">
+                        <div className="flex justify-between text-xs mb-2">
+                          <span className="text-amber-700 font-bold">Learning Progress</span>
+                          <span className="text-slate-400">25%</span>
+                        </div>
+                        <Progress value={25} className="h-2 bg-amber-100" />
+                      </div>
+                      <Button variant="outline" className="w-full border-amber-200 text-amber-700 hover:bg-amber-50">
+                        Mark as Mastered
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-2xl border border-dashed">
+                <BookOpen className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                <p className="text-slate-500">Your learning path is empty. What do you want to learn next?</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
