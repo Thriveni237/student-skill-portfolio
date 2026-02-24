@@ -23,13 +23,17 @@ const StudentDashboard = () => {
   useEffect(() => {
     if (user && !isDemo) {
       fetchDashboardData();
+    } else if (isDemo) {
+      setProfile(user);
+      setLoading(false);
     }
   }, [user, isDemo]);
 
   const fetchDashboardData = async () => {
     try {
-      const [profileData, skills, projects, certs] = await Promise.all([
-        api.get('/users/me'),
+      // Fetch user details by ID
+      const profileData = await api.get(`/users/${user.id}`);
+      const [skills, projects, certs] = await Promise.all([
         api.get('/skills'),
         api.get('/projects'),
         api.get('/certifications')
@@ -40,10 +44,12 @@ const StudentDashboard = () => {
         skills: skills?.length || 0,
         projects: projects?.length || 0,
         certs: certs?.length || 0,
-        views: 142
+        views: 142 // Placeholder for now
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+      // Fallback to auth user if API fails
+      setProfile(user);
     } finally {
       setLoading(false);
     }
@@ -59,6 +65,8 @@ const StudentDashboard = () => {
     );
   }
 
+  const displayName = profile?.firstName || user?.firstName || 'Student';
+
   const statCards = [
     { label: 'Skills Added', value: stats.skills, icon: Code2, color: 'text-blue-600', bg: 'bg-blue-100' },
     { label: 'Projects', value: stats.projects, icon: FolderRoot, color: 'text-indigo-600', bg: 'bg-indigo-100' },
@@ -71,7 +79,7 @@ const StudentDashboard = () => {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">
-            Welcome back, {profile?.firstName || 'User'}!
+            Welcome back, {displayName}!
           </h1>
           <p className="text-slate-500">Here's what's happening with your portfolio.</p>
         </div>
